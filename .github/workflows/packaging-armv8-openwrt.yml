@@ -20,7 +20,7 @@ on:
       openwrt_board:
         description: '设置设备(CPU)型号'
         required: false
-        default: 's905d_s905x3'
+        default: 's905d_qemu'
 
       customize_rk3399:
         description: '设置rk3399设备(设备型号:dtb名称)'
