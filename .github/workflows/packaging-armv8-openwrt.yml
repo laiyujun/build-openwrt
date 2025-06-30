@@ -8,7 +8,7 @@ on:
         required: true
         default: '18.06'
         type: choice
-        options: [18.06, 23.05]
+        options: ['18.06', '23.05']
 
       script_repo:
         description: '选择打包脚本储存库'

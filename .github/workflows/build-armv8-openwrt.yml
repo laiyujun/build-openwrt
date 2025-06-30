@@ -1,9 +1,9 @@
 name: build armv8 openwrt
 
 on:
-#  schedule: [cron: 30 14 */3 * *]
-#  watch:
-#    types: started
+  #自动编译：每个月15/28早上4点
+  schedule:
+    - cron: 0 16 15,28 * *
   workflow_dispatch:
     inputs:
       source:
@@ -11,7 +11,7 @@ on:
         required: true
         default: '18.06'
         type: choice
-        options: [18.06, 23.05]
+        options: ['18.06', '23.05']
 
       ip:
         description: '设置默认登录IP'
@@ -41,7 +41,7 @@ on:
         required: false
         default: 'arm64'
         type: choice
-        options: [false, amd64, arm64, armv7, armv6, armv5, 386]
+        options: [amd64, arm64, armv7, armv6, armv5]
 
       artifact:
         description: '上传固件到Artifact'
