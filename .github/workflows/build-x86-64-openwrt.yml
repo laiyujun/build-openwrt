@@ -11,7 +11,7 @@ on:
         required: true
         default: '18.06'
         type: choice
-        options: [18.06, 23.05]
+        options: ['18.06', '23.05']
 
       target:
         description: '选择要编译的机型'
@@ -23,7 +23,7 @@ on:
       ip:
         description: '设置默认登录IP'
         required: false
-        default: '192.168.1.2'
+        default: '192.168.2.8'
 
       partsize:
         description: '设置rootfs大小'
@@ -53,7 +53,7 @@ on:
         required: false
         default: 'amd64'
         type: choice
-        options: [false, amd64, arm64, armv7, armv6, armv5, 386]
+        options: [amd64, arm64, armv7, armv6, armv5, '386']
 
       artifact:
         description: '上传固件到Artifact'
@@ -211,6 +211,17 @@ jobs:
       with:
         name: ${{ env.SOURCE_REPO }}-${{ env.LITE_BRANCH }}-${{ env.DEVICE_TARGET }}-bin-${{ env.FILE_DATE }}
         path: ${{ env.OPENWRT_PATH }}/bin
+
+    - name: Packaging OpenWrt
+      if: steps.compile.conclusion == 'success'
+      uses: haiibo/flippy-openwrt-actions@main
+      env:
+        OPENWRT_ARMVIRT: openwrt/bin/targets/*/*/*rootfs.tar.gz
+        KERNEL_REPO_URL: ophub/kernel
+        KERNEL_USAGE: flippy
+        PACKAGE_SOC: qemu
+        KERNEL_VERSION_NAME: 6.1.y_6.6.y
+        KERNEL_AUTO_LATEST: true
 
     - name: Organize Files
       if: steps.compile.conclusion == 'success'
