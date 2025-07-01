@@ -254,7 +254,7 @@ jobs:
         removeArtifacts: true
         tag: ${{ env.RELEASE_TAG }}
         token: ${{ secrets.GITHUB_TOKEN }}
-        artifacts: ${{ env.FIRMWARE_PATH }}/*
+        artifacts: ${{ env.FIRMWARE_PATH }}/*,${{ env.PACKAGED_OUTPUTPATH }}/*
         body: |
           **This is ${{ env.SOURCE_REPO }} firmware for ${{ env.DEVICE_TARGET }}**
           ### 📒 固件信息
