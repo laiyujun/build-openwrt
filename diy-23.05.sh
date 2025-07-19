@@ -176,6 +176,7 @@ sed -i '$a src-git nas_luci https://github.com/linkease/nas-packages-luci.git;ma
 # 开始生成全局变量
 begin_time=$(date '+%H:%M:%S')
 [ -e $GITHUB_WORKSPACE/$CONFIG_FILE ] && cp -f $GITHUB_WORKSPACE/$CONFIG_FILE .config
+[ -e $GITHUB_WORKSPACE/$APP_CONFIG_FILE ] && echo "$(cat $GITHUB_WORKSPACE/$APP_CONFIG_FILE)" >> .config
 make defconfig 1>/dev/null 2>&1
 
 # 源仓库与分支
@@ -361,6 +362,7 @@ status "加载个人设置"
 # 开始更新配置文件
 begin_time=$(date '+%H:%M:%S')
 [ -e $GITHUB_WORKSPACE/$CONFIG_FILE ] && cp -f $GITHUB_WORKSPACE/$CONFIG_FILE .config
+[ -e $GITHUB_WORKSPACE/$APP_CONFIG_FILE ] && echo "$(cat $GITHUB_WORKSPACE/$APP_CONFIG_FILE)" >> .config
 make defconfig 1>/dev/null 2>&1
 status "更新配置文件"
 

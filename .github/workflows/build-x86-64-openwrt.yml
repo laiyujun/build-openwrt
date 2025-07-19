@@ -85,6 +85,7 @@ jobs:
       ZSH_TOOL: ${{ github.event.inputs.zsh_tool }}
       CLASH_KERNEL: ${{ github.event.inputs.openclash }}
       CONFIG_FILE: configs/${{ github.event.inputs.target }}-${{ github.event.inputs.source }}.config
+      APP_CONFIG_FILE: configs/app.config
       DIY_SCRIPT: diy-${{ github.event.inputs.source }}.sh
       RELEASE_TAG: ${{ github.event.inputs.target }}-${{ github.event.inputs.source }}
       TOOLCHAIN_TAG: toolchain
@@ -212,17 +213,6 @@ jobs:
         name: ${{ env.SOURCE_REPO }}-${{ env.LITE_BRANCH }}-${{ env.DEVICE_TARGET }}-bin-${{ env.FILE_DATE }}
         path: ${{ env.OPENWRT_PATH }}/bin
 
-    - name: Packaging OpenWrt
-      if: steps.compile.conclusion == 'success'
-      uses: haiibo/flippy-openwrt-actions@main
-      env:
-        OPENWRT_ARMVIRT: openwrt/bin/targets/*/*/*rootfs.tar.gz
-        KERNEL_REPO_URL: ophub/kernel
-        KERNEL_USAGE: flippy
-        PACKAGE_SOC: qemu
-        KERNEL_VERSION_NAME: 6.6.y_6.12.y
-        KERNEL_AUTO_LATEST: true
-
     - name: Organize Files
       if: steps.compile.conclusion == 'success'
       run: |
@@ -254,7 +244,7 @@ jobs:
         removeArtifacts: true
         tag: ${{ env.RELEASE_TAG }}
         token: ${{ secrets.GITHUB_TOKEN }}
-        artifacts: ${{ env.FIRMWARE_PATH }}/*,${{ env.PACKAGED_OUTPUTPATH }}/*
+        artifacts: ${{ env.FIRMWARE_PATH }}/*
         body: |
           **This is ${{ env.SOURCE_REPO }} firmware for ${{ env.DEVICE_TARGET }}**
           ### 📒 固件信息

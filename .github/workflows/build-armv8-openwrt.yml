@@ -71,6 +71,7 @@ jobs:
       ZSH_TOOL: ${{ github.event.inputs.zsh_tool }}
       CLASH_KERNEL: ${{ github.event.inputs.openclash }}
       CONFIG_FILE: configs/armv8-${{ github.event.inputs.source }}.config
+      APP_CONFIG_FILE: configs/app.config
       DIY_SCRIPT: diy-${{ github.event.inputs.source }}.sh
       RELEASE_TAG: armv8-${{ github.event.inputs.source }}
       TOOLCHAIN_TAG: toolchain
