@@ -58,7 +58,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-22.04
-    name: build armv8 ${{ github.event.inputs.source }}
+    name: build armv8 ${{ github.event.inputs.source || '18.06' }}
 #    strategy:
 #      fail-fast: false
 #      matrix:
@@ -66,14 +66,14 @@ jobs:
 #        branch: [18.06, 23.05]
 
     env:
-      DEFAULT_IP: ${{ github.event.inputs.ip }}
-      TOOLCHAIN: ${{ github.event.inputs.toolchain }}
-      ZSH_TOOL: ${{ github.event.inputs.zsh_tool }}
-      CLASH_KERNEL: ${{ github.event.inputs.openclash }}
-      CONFIG_FILE: configs/armv8-${{ github.event.inputs.source }}.config
+      DEFAULT_IP: ${{ github.event.inputs.ip || '192.168.2.5' }}
+      TOOLCHAIN: ${{ github.event.inputs.toolchain || true }}
+      ZSH_TOOL: ${{ github.event.inputs.zsh_tool || true }}
+      CLASH_KERNEL: ${{ github.event.inputs.openclash || 'arm64' }}
+      CONFIG_FILE: configs/armv8-${{ github.event.inputs.source || '18.06' }}.config
       APP_CONFIG_FILE: configs/app.config
-      DIY_SCRIPT: diy-${{ github.event.inputs.source }}.sh
-      RELEASE_TAG: armv8-${{ github.event.inputs.source }}
+      DIY_SCRIPT: diy-${{ github.event.inputs.source || '18.06' }}.sh
+      RELEASE_TAG: armv8-${{ github.event.inputs.source || '18.06' }}
       TOOLCHAIN_TAG: toolchain
       UPLOAD_BIN_DIR: false
       TZ: Asia/Shanghai
