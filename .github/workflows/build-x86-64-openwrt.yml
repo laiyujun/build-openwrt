@@ -1,9 +1,9 @@
 name: build x86/64 openwrt
 
 on:
-#  schedule: [cron: 30 14 */3 * *]
-#  watch:
-#    types: started
+  #自动编译：每个星期五早上4点
+  schedule:
+    - cron: 0 16 * * 5
   workflow_dispatch:
     inputs:
       source:
@@ -70,7 +70,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-22.04
-    name: build ${{ github.event.inputs.target }} ${{ github.event.inputs.source }}
+    name: build ${{ github.event.inputs.target || 'x86-64' }} ${{ github.event.inputs.source || '18.06' }}
 #    strategy:
 #      fail-fast: false
 #      matrix:
@@ -79,17 +79,19 @@ jobs:
 
     env:
 #      TARGET_DEVICE: ${{ github.event.inputs.target }}
-      DEFAULT_IP: ${{ github.event.inputs.ip }}
-      PART_SIZE: ${{ github.event.inputs.partsize }}
-      TOOLCHAIN: ${{ github.event.inputs.toolchain }}
-      ZSH_TOOL: ${{ github.event.inputs.zsh_tool }}
-      CLASH_KERNEL: ${{ github.event.inputs.openclash }}
-      CONFIG_FILE: configs/${{ github.event.inputs.target }}-${{ github.event.inputs.source }}.config
+      DEFAULT_IP: ${{ github.event.inputs.ip || '192.168.2.8'  }}
+      PART_SIZE: ${{ github.event.inputs.partsize || '800' }}
+      TOOLCHAIN: ${{ github.event.inputs.toolchain || true }}
+      ZSH_TOOL: ${{ github.event.inputs.zsh_tool || true }}
+      CLASH_KERNEL: ${{ github.event.inputs.openclash || 'amd64' }}
+      CONFIG_FILE: configs/${{ github.event.inputs.target || 'x86-64' }}-${{ github.event.inputs.source || '18.06' }}.config
       APP_CONFIG_FILE: configs/app.config
-      DIY_SCRIPT: diy-${{ github.event.inputs.source }}.sh
-      RELEASE_TAG: ${{ github.event.inputs.target }}-${{ github.event.inputs.source }}
+      DIY_SCRIPT: diy-${{ github.event.inputs.source || '18.06' }}.sh
+      RELEASE_TAG: ${{ github.event.inputs.target || 'x86-64' }}-${{ github.event.inputs.source || '18.06' }}
       TOOLCHAIN_TAG: toolchain
       UPLOAD_BIN_DIR: false
+      UPLOAD_TO_ARTIFACT: ${{ github.event.inputs.artifact || true }}
+      UPLOAD_TO_RELEASE: ${{ github.event.inputs.release || true }}
       TZ: Asia/Shanghai
 
     steps:
@@ -229,14 +231,14 @@ jobs:
         echo "FIRMWARE_PATH=$PWD" >>$GITHUB_ENV
 
     - name: Upload Firmware To Artifact
-      if: steps.compile.conclusion == 'success' && github.event.inputs.artifact == 'true'
+      if: steps.compile.conclusion == 'success' && env.UPLOAD_TO_ARTIFACT == 'true'
       uses: actions/upload-artifact@main
       with:
         name: ${{ env.SOURCE_REPO }}-${{ env.LITE_BRANCH }}-${{ env.DEVICE_TARGET }}-firmware-${{ env.FILE_DATE }}
         path: ${{ env.FIRMWARE_PATH }}
 
     - name: Upload Firmware To Release
-      if: steps.compile.conclusion == 'success' && github.event.inputs.release == 'true'
+      if: steps.compile.conclusion == 'success' && env.UPLOAD_TO_RELEASE == 'true'
       uses: ncipollo/release-action@main
       with:
         name: ${{ env.DATE }} for ${{ env.DEVICE_TARGET }}
