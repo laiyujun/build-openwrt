@@ -261,6 +261,9 @@ clone_all https://github.com/linkease/istore luci
 clone_all https://github.com/brvphoenix/luci-app-wrtbwmon
 clone_all https://github.com/brvphoenix/wrtbwmon
 
+# 应用过滤(OAF)
+clone_all master https://github.com/destan19/OpenAppFilter
+
 # 科学上网插件
 clone_all https://github.com/fw876/helloworld shadowsocks-rust
 clone_all https://github.com/xiaorouji/openwrt-passwall-packages shadowsocks-rust

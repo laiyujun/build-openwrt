@@ -265,6 +265,9 @@ git_clone https://github.com/ximiTech/msd_lite
 clone_all https://github.com/linkease/istore-ui
 clone_all https://github.com/linkease/istore luci
 
+# 应用过滤(OAF)
+clone_all master https://github.com/destan19/OpenAppFilter
+
 # 科学上网插件
 clone_all https://github.com/fw876/helloworld
 clone_all https://github.com/xiaorouji/openwrt-passwall-packages
