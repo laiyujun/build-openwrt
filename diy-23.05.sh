@@ -156,7 +156,7 @@ clone_all() {
 REPO_URL="https://github.com/immortalwrt/immortalwrt"
 echo "REPO_URL=$REPO_URL" >>$GITHUB_ENV
 # REPO_BRANCH="openwrt-23.05"
-REPO_BRANCH="master"
+REPO_BRANCH="openwrt-24.10"
 echo "REPO_BRANCH=$REPO_BRANCH" >>$GITHUB_ENV
 
 # 开始拉取编译源码
