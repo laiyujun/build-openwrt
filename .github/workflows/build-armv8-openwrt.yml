@@ -16,16 +16,6 @@ on:
         description: '设置默认登录IP'
         required: false
         default: '192.168.2.5'
-      toolchain:
-        description: '使用toolchain缓存'
-        required: false
-        default: true
-        type: boolean
-      zsh_tool:
-        description: '预设zsh终端工具'
-        required: false
-        default: true
-        type: boolean
       openclash:
         description: '预设openclash内核'
         required: false
