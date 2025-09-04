@@ -247,7 +247,7 @@ destination_dir="package/A"
 color cy "添加&替换插件"
 
 # 添加额外插件
-clone_dir openwrt-24.10 https://github.com/coolsnowwolf/luci luci-app-adguardhome
+clone_dir openwrt-23.05 https://github.com/coolsnowwolf/luci luci-app-adguardhome
 git_clone https://github.com/immortalwrt/homeproxy luci-app-homeproxy
 clone_all https://github.com/nikkinikki-org/OpenWrt-nikki
 clone_all https://github.com/QiuSimons/luci-app-daed PIC
