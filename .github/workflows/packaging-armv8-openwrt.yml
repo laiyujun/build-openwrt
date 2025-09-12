@@ -37,7 +37,7 @@ on:
         required: false
         default: 'ophub/kernel'
         type: choice
-        options: [ophub/kernel, breakingbadboy/OpenWrt]
+        options: [ophub/kernel, breakingbadboy/OpenWrt, laiyujun/amlogic-s9xxx-armbian]
 
       kernel_usage:
         description: '选择内核存储库的标签后缀'
