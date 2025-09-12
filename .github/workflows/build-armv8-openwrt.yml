@@ -11,44 +11,65 @@ on:
         required: true
         default: '18.06'
         type: choice
-        options: ['18.06', '23.05']
-
+        options: ['18.06', '24.10']
       ip:
         description: '设置默认登录IP'
         required: false
         default: '192.168.2.5'
-
-#      free_disk:
-#        description: '清理释放磁盘空间'
-#        required: false
-#        default: false
-#        type: boolean
-
-      toolchain:
-        description: '使用toolchain缓存'
-        required: false
-        default: true
-        type: boolean
-
-      zsh_tool:
-        description: '预设zsh终端工具'
-        required: false
-        default: true
-        type: boolean
-
       openclash:
         description: '预设openclash内核'
         required: false
         default: 'arm64'
         type: choice
         options: [amd64, arm64, armv7, armv6, armv5]
-
+      openwrt_kernel:
+        description: "选择模糊内核版本，和输入的是2选一，取最新"
+        required: true
+        default: "6.1.y_6.6.y_6.12.y"
+        type: choice
+        options:
+          - 5.4.y
+          - 5.10.y
+          - 5.15.y
+          - 6.1.y
+          - 6.6.y
+          - 6.12.y
+          - 5.4.y_5.10.y_5.15.y
+          - 5.15.y_6.1.y
+          - 6.1.y_6.6.y_6.12.y
+      input_kernel:
+        description: '输入具体内核版本，和选择的是2选一'
+        required: false
+        default: '6.6.100'
+        type: string
+      auto_kernel:
+        description: "Auto use the latest kernel"
+        required: false
+        default: true
+        type: boolean
+      kernel_repo:
+        description: "Set the kernel repository"
+        required: true
+        default: "ophub/kernel"
+        type: choice
+        options:
+          - ophub/kernel
+          - breakings/OpenWrt
+      kernel_usage:
+        description: "Set the tags of the stable kernel."
+        required: true
+        default: "stable"
+        type: choice
+        options:
+          - stable
+          - flippy
+          - dev
+          - beta
       artifact:
         description: '上传固件到Artifact'
         required: false
         default: true
         type: boolean
-
       release:
         description: '上传固件到Releases'
         required: false
@@ -63,19 +84,26 @@ jobs:
 #      fail-fast: false
 #      matrix:
 #        target: [armv8]
-#        branch: [18.06, 23.05]
+#        branch: [18.06, 24.10]
 
     env:
       DEFAULT_IP: ${{ github.event.inputs.ip || '192.168.2.5' }}
       TOOLCHAIN: ${{ github.event.inputs.toolchain || true }}
       ZSH_TOOL: ${{ github.event.inputs.zsh_tool || true }}
       CLASH_KERNEL: ${{ github.event.inputs.openclash || 'arm64' }}
+      OPENWRT_KERNEL: ${{ github.event.inputs.openwrt_kernel || '6.6.y' }}
+      AUTO_KERNEL: ${{ github.event.inputs.auto_kernel || true }}
+      INPUT_KERNEL: ${{ github.event.inputs.input_kernel || '6.6.100' }}
+      KERNEL_REPO: ${{ github.event.inputs.kernel_repo || 'ophub/kernel' }}
+      KERNEL_USAGE: ${{ github.event.inputs.kernel_usage || 'stable' }}
       CONFIG_FILE: configs/armv8-${{ github.event.inputs.source || '18.06' }}.config
       APP_CONFIG_FILE: configs/app.config
       DIY_SCRIPT: diy-${{ github.event.inputs.source || '18.06' }}.sh
       RELEASE_TAG: armv8-${{ github.event.inputs.source || '18.06' }}
       TOOLCHAIN_TAG: toolchain
       UPLOAD_BIN_DIR: false
+      UPLOAD_TO_ARTIFACT: ${{ github.event.inputs.artifact || true }}
+      UPLOAD_TO_RELEASE: ${{ github.event.inputs.release || true }}
       TZ: Asia/Shanghai
 
     steps:
@@ -96,18 +124,6 @@ jobs:
         echo -e "$(sudo lshw -short -C memory | grep GiB)\n"
         echo "==========================硬盘信息=========================="
         echo "硬盘数量: $(ls /dev/sd* | grep -v [1-9] | wc -l)" && df -hT
-
-#    - name: Free Disk Space
-#      if: github.event.inputs.free_disk == 'true'
-#      uses: jlumbroso/free-disk-space@main
-#      with:
-#        tool-cache: true
-#        android: true
-#        dotnet: true
-#        haskell: true
-#        large-packages: true
-#        docker-images: true
-#        swap-storage: true
 
     - name: Initialization Environment
       env:
@@ -199,16 +215,27 @@ jobs:
         name: ${{ env.SOURCE_REPO }}-${{ env.LITE_BRANCH }}-${{ env.DEVICE_TARGET }}-bin-${{ env.FILE_DATE }}
         path: ${{ env.OPENWRT_PATH }}/bin
 
-    - name: Packaging OpenWrt
-      if: steps.compile.conclusion == 'success'
+    - name: Packaging OpenWrt For Auto Kernel
+      if: steps.compile.conclusion == 'success' && env.AUTO_KERNEL == 'true'
       uses: haiibo/flippy-openwrt-actions@main
       env:
         OPENWRT_ARMVIRT: openwrt/bin/targets/*/*/*rootfs.tar.gz
-        KERNEL_REPO_URL: ophub/kernel
-        KERNEL_USAGE: flippy
+        KERNEL_REPO_URL: ${{ env.KERNEL_REPO }}
+        KERNEL_USAGE: ${{ env.KERNEL_USAGE }}
         PACKAGE_SOC: s905d_qemu
-        KERNEL_VERSION_NAME: 6.6.y_6.12.y
-        KERNEL_AUTO_LATEST: true
+        KERNEL_VERSION_NAME: ${{ env.OPENWRT_KERNEL }}
+        KERNEL_AUTO_LATEST: ${{ env.AUTO_KERNEL }}
+
+    - name: Packaging OpenWrt For Input Kernel
+      if: steps.compile.conclusion == 'success' && env.AUTO_KERNEL == 'false'
+      uses: haiibo/flippy-openwrt-actions@main
+      env:
+        OPENWRT_ARMVIRT: openwrt/bin/targets/*/*/*rootfs.tar.gz
+        KERNEL_REPO_URL: ${{ env.KERNEL_REPO }}
+        KERNEL_USAGE: ${{ env.KERNEL_USAGE }}
+        PACKAGE_SOC: s905d_qemu
+        KERNEL_VERSION_NAME: ${{ env.INPUT_KERNEL }}
+        KERNEL_AUTO_LATEST: ${{ env.AUTO_KERNEL }}
 
     - name: Organize Files
       if: env.PACKAGED_STATUS == 'success'
@@ -230,14 +257,14 @@ jobs:
         fi
 
     - name: Upload OpenWrt To Artifact
-      if: env.PACKAGED_STATUS == 'success' && github.event.inputs.artifact == 'true'
+      if: env.PACKAGED_STATUS == 'success' && env.UPLOAD_TO_ARTIFACT == 'true'
       uses: actions/upload-artifact@main
       with:
         name: ${{ env.SOURCE_REPO }}-${{ env.LITE_BRANCH }}-${{ env.DEVICE_TARGET }}-firmware-${{ env.FILE_DATE }}
         path: ${{ env.PACKAGED_OUTPUTPATH }}
 
     - name: Upload OpenWrt To Release
-      if: env.PACKAGED_STATUS == 'success' && github.event.inputs.release == 'true'
+      if: env.PACKAGED_STATUS == 'success' && env.UPLOAD_TO_RELEASE == 'true'
       uses: ncipollo/release-action@main
       with:
         name: ${{ env.DATE }} for ${{ env.DEVICE_TARGET }}
