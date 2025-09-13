@@ -273,7 +273,7 @@ clone_all https://github.com/fw876/helloworld
 clone_all https://github.com/xiaorouji/openwrt-passwall-packages
 clone_all https://github.com/xiaorouji/openwrt-passwall
 clone_all https://github.com/xiaorouji/openwrt-passwall2
-clone_dir https://github.com/vernesong/OpenClash luci-app-openclash
+#clone_dir https://github.com/vernesong/OpenClash luci-app-openclash
 
 # Themes
 git_clone 18.06 https://github.com/kiddin9/luci-theme-edge
@@ -285,7 +285,7 @@ clone_dir https://github.com/haiibo/packages luci-theme-opentomcat
 # 晶晨宝盒
 clone_all https://github.com/ophub/luci-app-amlogic
 sed -i "s|firmware_repo.*|firmware_repo 'https://github.com/$GITHUB_REPOSITORY'|g" $destination_dir/luci-app-amlogic/root/etc/config/amlogic
-# sed -i "s|kernel_path.*|kernel_path 'https://github.com/ophub/kernel'|g" $destination_dir/luci-app-amlogic/root/etc/config/amlogic
+sed -i "s|kernel_path.*|kernel_path 'https://github.com/laiyujun/amlogic-s9xxx-armbian'|g" $destination_dir/luci-app-amlogic/root/etc/config/amlogic
 sed -i "s|ARMv8|$RELEASE_TAG|g" $destination_dir/luci-app-amlogic/root/etc/config/amlogic
 
 # 开始加载个人设置

@@ -281,7 +281,7 @@ git_clone https://github.com/jerrykuku/luci-app-argon-config
 # 晶晨宝盒
 clone_all https://github.com/ophub/luci-app-amlogic
 sed -i "s|firmware_repo.*|firmware_repo 'https://github.com/$GITHUB_REPOSITORY'|g" $destination_dir/luci-app-amlogic/root/etc/config/amlogic
-# sed -i "s|kernel_path.*|kernel_path 'https://github.com/ophub/kernel'|g" $destination_dir/luci-app-amlogic/root/etc/config/amlogic
+sed -i "s|kernel_path.*|kernel_path 'https://github.com/laiyujun/amlogic-s9xxx-armbian'|g" $destination_dir/luci-app-amlogic/root/etc/config/amlogic
 sed -i "s|ARMv8|$RELEASE_TAG|g" $destination_dir/luci-app-amlogic/root/etc/config/amlogic
 
 # 开始加载个人设置

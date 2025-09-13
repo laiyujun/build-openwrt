@@ -9,7 +9,7 @@ on:
       source:
         description: '选择要编译的LUCI版本'
         required: true
-        default: '18.06'
+        default: '24.10'
         type: choice
         options: ['18.06', '24.10']
       ip:
@@ -25,7 +25,7 @@ on:
       openwrt_kernel:
         description: "选择模糊内核版本，和输入的是2选一，取最新"
         required: true
-        default: "6.1.y_6.6.y_6.12.y"
+        default: "6.6.y"
         type: choice
         options:
           - 5.4.y
@@ -40,7 +40,7 @@ on:
       input_kernel:
         description: '输入具体内核版本，和选择的是2选一'
         required: false
-        default: '6.6.100'
+        default: '6.6.105'
         type: string
       auto_kernel:
         description: "Auto use the latest kernel"
@@ -50,7 +50,7 @@ on:
       kernel_repo:
         description: "Set the kernel repository"
         required: true
-        default: "ophub/kernel"
+        default: "laiyujun/amlogic-s9xxx-armbian"
         type: choice
         options:
           - ophub/kernel
@@ -94,7 +94,7 @@ jobs:
       CLASH_KERNEL: ${{ github.event.inputs.openclash || 'arm64' }}
       OPENWRT_KERNEL: ${{ github.event.inputs.openwrt_kernel || '6.6.y' }}
       AUTO_KERNEL: ${{ github.event.inputs.auto_kernel || true }}
-      INPUT_KERNEL: ${{ github.event.inputs.input_kernel || '6.6.100' }}
+      INPUT_KERNEL: ${{ github.event.inputs.input_kernel || '6.6.105' }}
       KERNEL_REPO: ${{ github.event.inputs.kernel_repo || 'ophub/kernel' }}
       KERNEL_USAGE: ${{ github.event.inputs.kernel_usage || 'stable' }}
       CONFIG_FILE: configs/armv8-${{ github.event.inputs.source || '18.06' }}.config

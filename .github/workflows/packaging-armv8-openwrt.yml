@@ -6,7 +6,7 @@ on:
       source_repo:
         description: '选择要打包的LUCI版本'
         required: true
-        default: '18.06'
+        default: '24.10'
         type: choice
         options: ['18.06', '24.10']
 
@@ -30,19 +30,19 @@ on:
       openwrt_kernel:
         description: '选择内核版本'
         required: false
-        default: '6.1.y_6.6.y'
+        default: '6.6.y'
 
       kernel_repo:
         description: '选择内核存储库'
         required: false
-        default: 'ophub/kernel'
+        default: 'laiyujun/amlogic-s9xxx-armbian'
         type: choice
         options: [ophub/kernel, breakingbadboy/OpenWrt, laiyujun/amlogic-s9xxx-armbian]
 
       kernel_usage:
         description: '选择内核存储库的标签后缀'
         required: false
-        default: 'flippy'
+        default: 'stable'
         type: choice
         options: [flippy, stable]
 
