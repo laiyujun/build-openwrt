@@ -35,9 +35,9 @@ on:
       kernel_repo:
         description: '选择内核存储库'
         required: false
-        default: 'laiyujun/amlogic-s9xxx-armbian'
+        default: 'laiyujun/kernel'
         type: choice
-        options: [ophub/kernel, breakingbadboy/OpenWrt, laiyujun/amlogic-s9xxx-armbian]
+        options: [ophub/kernel, breakingbadboy/OpenWrt, laiyujun/kernel]
 
       kernel_usage:
         description: '选择内核存储库的标签后缀'
