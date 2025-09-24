@@ -281,7 +281,7 @@ git_clone 18.06 https://github.com/jerrykuku/luci-theme-argon
 git_clone 18.06 https://github.com/jerrykuku/luci-app-argon-config
 clone_dir https://github.com/xiaoqingfengATGH/luci-theme-infinityfreedom luci-theme-infinityfreedom-ng
 clone_dir https://github.com/haiibo/packages luci-theme-opentomcat
-clone_all main https://github.com/thinktip/luci-theme-neobird
+clone_all main https://github.com/thinktip/luci-theme-neobird luci-theme-neobird
 
 # 晶晨宝盒
 clone_all https://github.com/ophub/luci-app-amlogic
