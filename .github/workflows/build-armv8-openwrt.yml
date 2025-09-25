@@ -94,7 +94,7 @@ jobs:
       CLASH_KERNEL: ${{ github.event.inputs.openclash || 'arm64' }}
       OPENWRT_KERNEL: ${{ github.event.inputs.openwrt_kernel || '6.6.y' }}
       AUTO_KERNEL: ${{ github.event.inputs.auto_kernel || true }}
-      INPUT_KERNEL: ${{ github.event.inputs.input_kernel || '6.6.105' }}
+      INPUT_KERNEL: ${{ github.event.inputs.input_kernel || '6.6.106' }}
       KERNEL_REPO: ${{ github.event.inputs.kernel_repo || 'laiyujun/kernel' }}
       KERNEL_USAGE: ${{ github.event.inputs.kernel_usage || 'stable' }}
       CONFIG_FILE: configs/armv8-${{ github.event.inputs.source || '18.06' }}.config
