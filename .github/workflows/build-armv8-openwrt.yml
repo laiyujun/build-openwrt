@@ -40,7 +40,7 @@ on:
       input_kernel:
         description: '输入具体内核版本，和选择的是2选一'
         required: false
-        default: '6.6.105'
+        default: '6.6.106'
         type: string
       auto_kernel:
         description: "Auto use the latest kernel"
