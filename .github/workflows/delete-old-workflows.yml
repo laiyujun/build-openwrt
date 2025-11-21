@@ -2,6 +2,7 @@ name: delete old workflows
 
 on:
 #  schedule: [cron: 0 17 * * 5]
+  workflow_call:
   workflow_dispatch:
     inputs:
       delete_releases:
