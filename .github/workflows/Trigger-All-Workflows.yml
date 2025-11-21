@@ -1,0 +1,27 @@
+name: Trigger-All-Workflows  # 主要工作流的名称
+
+on:
+  workflow_dispatch:  # 手动触发：通过 GitHub UI 来触发
+  schedule:
+    - cron: 0 20 * * 5  # 北京时间星期六凌晨4点，定时触发
+
+jobs:
+  armv8-lede:
+    uses: ./.github/workflows/build-armv8-openwrt.yml
+    with:
+      source: '18.06'
+  armv8-Immortal:
+    uses: ./.github/workflows/build-armv8-openwrt.yml
+    with:
+      source: '24.10'
+  x86-64-lede:
+    uses: ./.github/workflows/build-x86-64-openwrt.yml
+    with:
+      source: '18.06'
+  x86-64-Immortal:
+    uses: ./.github/workflows/build-x86-64-openwrt.yml
+    with:
+      source: '24.10'
+
+  Delete-Old-Workflows:
+    uses: ./.github/workflows/delete-old-workflows.yml

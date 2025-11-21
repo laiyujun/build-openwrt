@@ -2,8 +2,15 @@ name: build x86/64 openwrt
 
 on:
   #自动编译：每个星期五早上4点
-  schedule:
-    - cron: 0 16 * * 5
+#  schedule:
+#    - cron: 0 16 * * 5
+  workflow_call:
+    inputs:
+      source:
+        description: '选择要编译的源码版本，可选：18.06, 24.10'
+        required: true
+        default: '18.06'
+        type: string
   workflow_dispatch:
     inputs:
       source:
@@ -69,7 +76,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     name: build ${{ github.event.inputs.target || 'x86-64' }} ${{ github.event.inputs.source || '18.06' }}
 #    strategy:
 #      fail-fast: false
@@ -113,32 +120,18 @@ jobs:
         echo "==========================硬盘信息=========================="
         echo "硬盘数量: $(ls /dev/sd* | grep -v [1-9] | wc -l)" && df -hT
 
-#    - name: Free Disk Space
-#      if: github.event.inputs.free_disk == 'true'
-#      uses: jlumbroso/free-disk-space@main
-#      with:
-#        tool-cache: true
-#        android: true
-#        dotnet: true
-#        haskell: true
-#        large-packages: true
-#        docker-images: true
-#        swap-storage: true
-
     - name: Initialization Environment
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
-        docker rmi $(docker images -q)
-        sudo rm -rf /usr/share/dotnet /etc/apt/sources.list.d /usr/local/lib/android $AGENT_TOOLSDIRECTORY
-        sudo swapoff -a && sudo rm -f /swapfile /mnt/swapfile
-        sudo -E apt-get -y purge azure-cli ghc* zulu* llvm* firefox google* dotnet* powershell openjdk* mongodb* moby* || true
-        (sudo -E apt-get -y update
-        sudo -E apt-get -y install clang $(curl -fsSL is.gd/depends_ubuntu_2204)
+        sudo -E apt-get -y update
+        sudo -E apt-get -y install dos2unix
+        sudo -E apt-get -y install $(curl -fsSL ophub.org/ubuntu2404-make-openwrt-depends)
         sudo -E systemctl daemon-reload
-        sudo -E apt-get -y autoremove --purge
-        sudo -E apt-get -y clean) &
         sudo timedatectl set-timezone "$TZ"
+        date -u
+        timedatectl status || true
+        echo "status=success" >> ${GITHUB_OUTPUT}
 
     - name: Combine Disks
       run: |

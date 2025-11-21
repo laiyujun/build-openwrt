@@ -2,14 +2,21 @@ name: build armv8 openwrt
 
 on:
   #自动编译：每个月15/28早上4点
-  schedule:
-    - cron: 0 16 15,28 * *
+#  schedule:
+#    - cron: 0 16 15,28 * *
+  workflow_call:
+    inputs:
+      source:
+        description: '选择要编译的源码版本，可选：18.06, 24.10'
+        required: true
+        default: '18.06'
+        type: string
   workflow_dispatch:
     inputs:
       source:
         description: '选择要编译的LUCI版本'
         required: true
-        default: '24.10'
+        default: '18.06'
         type: choice
         options: ['18.06', '24.10']
       ip:
@@ -40,7 +47,7 @@ on:
       input_kernel:
         description: '输入具体内核版本，和选择的是2选一'
         required: false
-        default: '6.6.106'
+        default: '6.6.116'
         type: string
       auto_kernel:
         description: "Auto use the latest kernel"
@@ -94,7 +101,7 @@ jobs:
       CLASH_KERNEL: ${{ github.event.inputs.openclash || 'arm64' }}
       OPENWRT_KERNEL: ${{ github.event.inputs.openwrt_kernel || '6.6.y' }}
       AUTO_KERNEL: ${{ github.event.inputs.auto_kernel || true }}
-      INPUT_KERNEL: ${{ github.event.inputs.input_kernel || '6.6.106' }}
+      INPUT_KERNEL: ${{ github.event.inputs.input_kernel || '6.6.116' }}
       KERNEL_REPO: ${{ github.event.inputs.kernel_repo || 'laiyujun/kernel' }}
       KERNEL_USAGE: ${{ github.event.inputs.kernel_usage || 'stable' }}
       CONFIG_FILE: configs/armv8-${{ github.event.inputs.source || '18.06' }}.config
