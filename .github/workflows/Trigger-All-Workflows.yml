@@ -7,21 +7,27 @@ on:
 
 jobs:
   armv8-lede:
-    uses: ./.github/workflows/build-armv8-openwrt.yml
+    uses: ./.github/workflows/build-openwrt.yml
     with:
       source: '18.06'
+      target: 'armv8'
   armv8-Immortal:
-    uses: ./.github/workflows/build-armv8-openwrt.yml
+    uses: ./.github/workflows/build-openwrt.yml
     with:
       source: '24.10'
+      target: 'armv8'
   x86-64-lede:
-    uses: ./.github/workflows/build-x86-64-openwrt.yml
+    uses: ./.github/workflows/build-openwrt.yml
     with:
       source: '18.06'
+      target: 'x86-64'
+      openclash: 'amd64'
   x86-64-Immortal:
-    uses: ./.github/workflows/build-x86-64-openwrt.yml
+    uses: ./.github/workflows/build-openwrt.yml
     with:
       source: '24.10'
+      target: 'x86-64'
+      openclash: 'amd64'
 
   Delete-Old-Workflows:
     uses: ./.github/workflows/delete-old-workflows.yml
