@@ -69,21 +69,22 @@ on:
 jobs:
   build:
     runs-on: ubuntu-24.04
+    name: build ${{ inputs.target }} ${{ inputs.source }}
 
     env:
-#      TARGET_DEVICE: ${{ github.event.inputs.target }}
-      DEFAULT_IP: ${{ github.event.inputs.ip || '192.168.2.254'  }}
-      TOOLCHAIN: ${{ github.event.inputs.toolchain || true }}
-      ZSH_TOOL: ${{ github.event.inputs.zsh_tool || true }}
-      CLASH_KERNEL: ${{ github.event.inputs.openclash || 'arm64' }}
-      CONFIG_FILE: configs/${{ github.event.inputs.target || 'armv8' }}-${{ github.event.inputs.source || '18.06' }}.config
+#      TARGET_DEVICE: ${{ inputs.target }}
+      DEFAULT_IP: ${{ inputs.ip || '192.168.2.254'  }}
+      TOOLCHAIN: ${{ inputs.toolchain || true }}
+      ZSH_TOOL: ${{ inputs.zsh_tool || true }}
+      CLASH_KERNEL: ${{ inputs.openclash || 'arm64' }}
+      CONFIG_FILE: configs/${{ inputs.target || 'armv8' }}-${{ inputs.source || '18.06' }}.config
       APP_CONFIG_FILE: configs/app.config
-      DIY_SCRIPT: diy-${{ github.event.inputs.source || '18.06' }}.sh
-      RELEASE_TAG: ${{ github.event.inputs.target || 'armv8' }}-${{ github.event.inputs.source || '18.06' }}
+      DIY_SCRIPT: diy-${{ inputs.source || '18.06' }}.sh
+      RELEASE_TAG: ${{ inputs.target || 'armv8' }}-${{ inputs.source || '18.06' }}
       TOOLCHAIN_TAG: toolchain
       UPLOAD_BIN_DIR: false
-      UPLOAD_TO_ARTIFACT: ${{ github.event.inputs.artifact || false }}
-      UPLOAD_TO_RELEASE: ${{ github.event.inputs.release || true }}
+      UPLOAD_TO_ARTIFACT: ${{ inputs.artifact || false }}
+      UPLOAD_TO_RELEASE: ${{ inputs.release || true }}
       TZ: Asia/Shanghai
 
     steps:
