@@ -69,7 +69,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-24.04
-    name: build ${{ github.event.inputs.target || 'x86-64' }} ${{ github.event.inputs.source || '18.06' }}
 
     env:
 #      TARGET_DEVICE: ${{ github.event.inputs.target }}
