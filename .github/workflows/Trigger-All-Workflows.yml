@@ -25,3 +25,6 @@ jobs:
 
   Delete-Old-Workflows:
     uses: ./.github/workflows/delete-old-workflows.yml
+    with:
+      releases_keep_latest: 5
+      workflows_keep_day: 15
