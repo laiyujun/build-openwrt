@@ -58,7 +58,7 @@ on:
       artifact:
         description: '上传固件到Artifact'
         required: false
-        default: false
+        default: true
         type: boolean
       release:
         description: '上传固件到Releases'
@@ -83,7 +83,7 @@ jobs:
       RELEASE_TAG: ${{ inputs.target || 'armv8' }}-${{ inputs.source || '18.06' }}
       TOOLCHAIN_TAG: toolchain
       UPLOAD_BIN_DIR: false
-      UPLOAD_TO_ARTIFACT: ${{ inputs.artifact || false }}
+      UPLOAD_TO_ARTIFACT: ${{ inputs.artifact || true }}
       UPLOAD_TO_RELEASE: ${{ inputs.release || true }}
       TZ: Asia/Shanghai
 
