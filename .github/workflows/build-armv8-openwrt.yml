@@ -249,13 +249,9 @@ jobs:
           cat config.buildinfo
           cp -rf $OPENWRT_PATH/bin/packages/* packages
           tar -zcf packages.tar.gz packages
-          sleep 3s && rm -rf packages u-boot-qemu* sha256sums *.buildinfo *.manifest *.bin
+          sleep 3s && rm -rf packages u-boot-qemu* sha256sums *.buildinfo *.manifest *.bin *rootfs.tar.gz *.sha
           sed '/^$/d' $OPENWRT_PATH/.config >config.txt
           echo "FIRMWARE_PATH=$PWD" >>$GITHUB_ENV
-          cd $PACKAGED_OUTPUTPATH && rm -f *rootfs.tar.gz *.sha
-          if [[ $SOURCE_REPO == 'immortalwrt' ]]; then
-            rename 's/openwrt/${{ env.SOURCE_REPO }}/' *
-          fi
 
       - name: Upload OpenWrt To Artifact
         if: env.PACKAGED_STATUS == 'success' && env.UPLOAD_TO_ARTIFACT == 'true'
