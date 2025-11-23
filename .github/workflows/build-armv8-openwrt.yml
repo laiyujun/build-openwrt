@@ -133,13 +133,20 @@ jobs:
           DEBIAN_FRONTEND: noninteractive
         run: |
           sudo -E apt-get -y update
-          sudo -E apt-get -y install dos2unix
+          sudo -E apt-get -y install dos2unix rename
           sudo -E apt-get -y install $(curl -fsSL https://ophub.org/ubuntu2404-make-openwrt-depends)
           sudo -E systemctl daemon-reload
           sudo timedatectl set-timezone "$TZ"        
           date -u
           timedatectl status || true
           echo "status=success" >> ${GITHUB_OUTPUT}
+          
+          # 检查 rename 命令是否存在
+          if ! command -v rename &> /dev/null; then
+            echo "rename command not found, using fallback method"
+          else
+            echo "rename command can be used."
+          fi
 
       - name: Combine Disks
         run: |
@@ -249,9 +256,13 @@ jobs:
           cat config.buildinfo
           cp -rf $OPENWRT_PATH/bin/packages/* packages
           tar -zcf packages.tar.gz packages
-          sleep 3s && rm -rf packages u-boot-qemu* sha256sums *.buildinfo *.manifest *.bin *rootfs.tar.gz *.sha
+          sleep 3s && rm -rf packages u-boot-qemu* sha256sums *.buildinfo *.manifest *.bin
           sed '/^$/d' $OPENWRT_PATH/.config >config.txt
           echo "FIRMWARE_PATH=$PWD" >>$GITHUB_ENV
+          cd $PACKAGED_OUTPUTPATH && rm -f *rootfs.tar.gz *.sha
+          if [[ $SOURCE_REPO == 'immortalwrt' ]]; then
+            rename 's/openwrt/${{ env.SOURCE_REPO }}/' *
+          fi
 
       - name: Upload OpenWrt To Artifact
         if: env.PACKAGED_STATUS == 'success' && env.UPLOAD_TO_ARTIFACT == 'true'
