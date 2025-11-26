@@ -18,10 +18,12 @@ jobs:
     uses: ./.github/workflows/build-x86-64-openwrt.yml
     with:
       source: '18.06'
+      partsize: 2048
   x86-64-Immortal:
     uses: ./.github/workflows/build-x86-64-openwrt.yml
     with:
       source: '24.10'
+      partsize: 2048
 
   Delete-Old-Workflows:
     uses: ./.github/workflows/delete-old-workflows.yml

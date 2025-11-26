@@ -11,6 +11,11 @@ on:
         required: true
         default: '18.06'
         type: string
+      partsize:
+        description: '设置rootfs大小'
+        required: false
+        default: 800
+        type: number
   workflow_dispatch:
     inputs:
       source:
@@ -35,7 +40,7 @@ on:
       partsize:
         description: '设置rootfs大小'
         required: false
-        default: '800'
+        default: 800
 
       toolchain:
         description: '使用toolchain缓存'
@@ -76,7 +81,7 @@ jobs:
     env:
       # TARGET_DEVICE: ${{ inputs.target }}
       DEFAULT_IP: ${{ inputs.ip || '192.168.2.8'  }}
-      PART_SIZE: ${{ inputs.partsize || '800' }}
+      PART_SIZE: ${{ inputs.partsize || '1024' }}
       TOOLCHAIN: ${{ inputs.toolchain || true }}
       ZSH_TOOL: ${{ inputs.zsh_tool || true }}
       CLASH_KERNEL: ${{ inputs.openclash || 'amd64' }}
@@ -186,10 +191,7 @@ jobs:
           mkdir -p files/etc/uci-defaults
           cp $GITHUB_WORKSPACE/scripts/init-settings.sh files/etc/uci-defaults/99-init-settings
           echo -e "$(nproc) thread compile"
-          make -j$(nproc) || make -j1 V=s || df -hT
-          echo "==============================="
-          df -hT
-          echo "==============================="
+          make -j$(nproc) || make -j1 V=s
           echo "FILE_DATE=$(date +"%Y.%m.%d")" >>$GITHUB_ENV
           echo "DATE=$(date +"%Y-%m-%d %H:%M:%S")" >>$GITHUB_ENV
 
