@@ -106,7 +106,7 @@ jobs:
       ZSH_TOOL: ${{ inputs.zsh_tool || true }}
       CLASH_KERNEL: ${{ inputs.openclash || 'arm64' }}
       OPENWRT_BOARD: ${{ inputs.openwrt_board || 's905d_qemu' }}
-      OPENWRT_KERNEL: ${{ inputs.openwrt_kernel || '6.6.y' }}
+      OPENWRT_KERNEL: ${{ inputs.openwrt_kernel || '6.1.y_6.6.y_6.12.y' }}
       AUTO_KERNEL: ${{ inputs.auto_kernel || true }}
       INPUT_KERNEL: ${{ inputs.input_kernel || '6.6.116' }}
       KERNEL_REPO: ${{ inputs.kernel_repo || 'laiyujun/kernel' }}
