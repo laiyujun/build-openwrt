@@ -160,17 +160,18 @@ function git_sparse_clone() {
   }
   cd .. || exit
   local target_dir source_dir current_dir
-  for target_dir in $(ls -l $temp_dir/$@ | awk '/^d/{print $NF}'); do
-      source_dir=$(find_dir "$temp_dir" "$target_dir")
-      current_dir=$(find_dir "package/ feeds/ target/" "$target_dir")
-      if ([[ -d $current_dir ]] && rm -rf $current_dir); then
-          mv -f $source_dir ${current_dir%/*}
-          print_info $(color cg 替换) $target_dir [ $(color cg ✔) ]
-      else
-          mv -f $source_dir $destination_dir
-          print_info $(color cb 添加) $target_dir [ $(color cb ✔) ]
-      fi
-  done
+  target_dir=$(basename "$temp_dir/$@")
+#  for target_dir in $(ls -l $temp_dir/$@ | awk '/^d/{print $NF}'); do
+  source_dir=$(find_dir "$temp_dir" "$target_dir")
+  current_dir=$(find_dir "package/ feeds/ target/" "$target_dir")
+  if ([[ -d $current_dir ]] && rm -rf $current_dir); then
+      mv -f $source_dir ${current_dir%/*}
+      print_info $(color cg 替换) $target_dir [ $(color cg ✔) ]
+  else
+      mv -f $source_dir $destination_dir
+      print_info $(color cb 添加) $target_dir [ $(color cb ✔) ]
+  fi
+#  done
   rm -rf $temp_dir
 }
 
