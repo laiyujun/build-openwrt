@@ -147,6 +147,33 @@ clone_all() {
     rm -rf $temp_dir
 }
 
+# Git稀疏克隆，只克隆指定目录到本地
+function git_sparse_clone() {
+  branch=$1 repourl=$2 && shift 2
+  temp_dir=$(mktemp -d tmp.XXXX) || exit 1
+  git clone -b $branch --depth=1 --filter=blob:none --sparse $repourl $temp_dir
+  cd $temp_dir || exit
+  git sparse-checkout init --cone
+  git sparse-checkout set $@ 2>/dev/null || {
+      print_info $(color cr 拉取) $repourl [ $(color cr ✕) ]
+      return 0
+  }
+  cd .. || exit
+  local target_dir source_dir current_dir
+  for target_dir in $(ls -l $temp_dir/$@ | awk '/^d/{print $NF}'); do
+      source_dir=$(find_dir "$temp_dir" "$target_dir")
+      current_dir=$(find_dir "package/ feeds/ target/" "$target_dir")
+      if ([[ -d $current_dir ]] && rm -rf $current_dir); then
+          mv -f $source_dir ${current_dir%/*}
+          print_info $(color cg 替换) $target_dir [ $(color cg ✔) ]
+      else
+          mv -f $source_dir $destination_dir
+          print_info $(color cb 添加) $target_dir [ $(color cb ✔) ]
+      fi
+  done
+  rm -rf $temp_dir
+}
+
 # 设置编译源码与分支
 REPO_URL="https://github.com/coolsnowwolf/lede"
 echo "REPO_URL=$REPO_URL" >>$GITHUB_ENV
@@ -269,6 +296,9 @@ clone_all https://github.com/xiaorouji/openwrt-passwall-packages
 clone_all https://github.com/xiaorouji/openwrt-passwall
 clone_all https://github.com/xiaorouji/openwrt-passwall2
 clone_dir https://github.com/vernesong/OpenClash luci-app-openclash
+
+# 官仓Dockerman
+git_sparse_clone master https://github.com/openwrt/luci applications/luci-app-dockerman
 
 # Themes
 git_clone 18.06 https://github.com/kiddin9/luci-theme-edge
