@@ -175,6 +175,26 @@ function git_sparse_clone() {
   rm -rf $temp_dir
 }
 
+#安装和更新软件包
+UPDATE_PACKAGE() {
+	local PKG_NAME=$1
+	local PKG_REPO=$2
+	local PKG_BRANCH=$3
+	local PKG_SPECIAL=$4
+	local REPO_NAME=$(echo $PKG_REPO | cut -d '/' -f 2)
+
+	rm -rf $(find ../feeds/luci/ ../feeds/packages/ -maxdepth 3 -type d -iname "*$PKG_NAME*" -prune)
+
+	git clone --depth=1 --single-branch --branch $PKG_BRANCH "https://github.com/$PKG_REPO.git"
+
+	if [[ $PKG_SPECIAL == "pkg" ]]; then
+		cp -rf $(find ./$REPO_NAME/*/ -maxdepth 3 -type d -iname "*$PKG_NAME*" -prune) ./
+		rm -rf ./$REPO_NAME/
+	elif [[ $PKG_SPECIAL == "name" ]]; then
+		mv -f $REPO_NAME $PKG_NAME
+	fi
+}
+
 # 设置编译源码与分支
 REPO_URL="https://github.com/immortalwrt/immortalwrt"
 echo "REPO_URL=$REPO_URL" >>$GITHUB_ENV
@@ -284,6 +304,10 @@ clone_all https://github.com/linkease/istore-ui
 clone_all https://github.com/linkease/istore luci
 clone_all https://github.com/linkease/nas-packages-luci luci
 #clone_all https://github.com/linkease/nas-packages
+#iStorex && dependency
+UPDATE_PACKAGE "istorex" "linkease/nas-packages-luci" "main" "pkg"
+UPDATE_PACKAGE "quickstart" "linkease/nas-packages" "master" "pkg"
+UPDATE_PACKAGE "luci-app-quickstart" "linkease/nas-packages-luci" "main" "pkg"
 
 clone_all https://github.com/brvphoenix/luci-app-wrtbwmon
 clone_all https://github.com/brvphoenix/wrtbwmon
