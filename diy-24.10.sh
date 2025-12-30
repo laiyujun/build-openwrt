@@ -147,6 +147,34 @@ clone_all() {
     rm -rf $temp_dir
 }
 
+# Git稀疏克隆，只克隆指定目录到本地
+function git_sparse_clone() {
+  branch=$1 repourl=$2 && shift 2
+  temp_dir=$(mktemp -d tmp.XXXX) || exit 1
+  git clone -b $branch --depth=1 --filter=blob:none --sparse $repourl $temp_dir
+  cd $temp_dir || exit
+  git sparse-checkout init --cone
+  git sparse-checkout set $@ 2>/dev/null || {
+      print_info $(color cr 拉取) $repourl [ $(color cr ✕) ]
+      return 0
+  }
+  cd .. || exit
+  local target_dir source_dir current_dir
+  target_dir=$(basename "$temp_dir/$@")
+#  for target_dir in $(ls -l $temp_dir/$@ | awk '/^d/{print $NF}'); do
+  source_dir=$(find_dir "$temp_dir" "$target_dir")
+  current_dir=$(find_dir "package/ feeds/ target/" "$target_dir")
+  if ([[ -d $current_dir ]] && rm -rf $current_dir); then
+      mv -f $source_dir ${current_dir%/*}
+      print_info $(color cg 替换) $target_dir [ $(color cg ✔) ]
+  else
+      mv -f $source_dir $destination_dir
+      print_info $(color cb 添加) $target_dir [ $(color cb ✔) ]
+  fi
+#  done
+  rm -rf $temp_dir
+}
+
 # 设置编译源码与分支
 REPO_URL="https://github.com/immortalwrt/immortalwrt"
 echo "REPO_URL=$REPO_URL" >>$GITHUB_ENV
@@ -165,9 +193,9 @@ ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
 echo "OPENWRT_PATH=$PWD" >>$GITHUB_ENV
 
 # Add iStore feed source
-sed -i '$a src-git istore https://github.com/linkease/istore;main' feeds.conf.default
-sed -i '$a src-git nas https://github.com/linkease/nas-packages.git;master' feeds.conf.default
-sed -i '$a src-git nas_luci https://github.com/linkease/nas-packages-luci.git;main' feeds.conf.default
+#sed -i '$a src-git istore https://github.com/linkease/istore;main' feeds.conf.default
+#sed -i '$a src-git nas https://github.com/linkease/nas-packages.git;master' feeds.conf.default
+#sed -i '$a src-git nas_luci https://github.com/linkease/nas-packages-luci.git;main' feeds.conf.default
 
 # 生成全局变量
 begin_time=$(date '+%H:%M:%S')
@@ -251,8 +279,11 @@ clone_all https://github.com/sbwml/luci-app-openlist2
 clone_all https://github.com/sbwml/luci-app-mosdns
 git_clone https://github.com/sbwml/packages_lang_golang golang
 
+# iStore
 clone_all https://github.com/linkease/istore-ui
 clone_all https://github.com/linkease/istore luci
+clone_all https://github.com/linkease/nas-packages-luci luci
+clone_all https://github.com/linkease/nas-packages
 
 clone_all https://github.com/brvphoenix/luci-app-wrtbwmon
 clone_all https://github.com/brvphoenix/wrtbwmon

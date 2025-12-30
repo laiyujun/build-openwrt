@@ -195,9 +195,9 @@ echo "OPENWRT_PATH=$PWD" >>$GITHUB_ENV
 sed -i '/luci/s/^#//; /luci.git;openwrt/s/^/#/' feeds.conf.default
 
 # Add iStore feed source
-sed -i '$a src-git istore https://github.com/linkease/istore;main' feeds.conf.default
-sed -i '$a src-git nas https://github.com/linkease/nas-packages.git;master' feeds.conf.default
-sed -i '$a src-git nas_luci https://github.com/linkease/nas-packages-luci.git;main' feeds.conf.default
+#sed -i '$a src-git istore https://github.com/linkease/istore;main' feeds.conf.default
+#sed -i '$a src-git nas https://github.com/linkease/nas-packages.git;master' feeds.conf.default
+#sed -i '$a src-git nas_luci https://github.com/linkease/nas-packages-luci.git;main' feeds.conf.default
 
 # 生成全局变量
 begin_time=$(date '+%H:%M:%S')
@@ -285,8 +285,11 @@ git_clone https://github.com/pymumu/openwrt-smartdns smartdns
 git_clone https://github.com/ximiTech/luci-app-msd_lite
 git_clone https://github.com/ximiTech/msd_lite
 
+# iStore
 clone_all https://github.com/linkease/istore-ui
 clone_all https://github.com/linkease/istore luci
+clone_all https://github.com/linkease/nas-packages-luci luci
+clone_all https://github.com/linkease/nas-packages
 
 # 应用过滤(OAF)
 clone_all master https://github.com/destan19/OpenAppFilter
@@ -298,8 +301,8 @@ clone_all https://github.com/xiaorouji/openwrt-passwall
 clone_all https://github.com/xiaorouji/openwrt-passwall2
 clone_dir https://github.com/vernesong/OpenClash luci-app-openclash
 
-# 官仓Dockerman
-git_sparse_clone master https://github.com/openwrt/luci applications/luci-app-dockerman
+# luci-app-dockerman: fix unhandled nil on containers page
+git_sparse_clone master https://github.com/laiyujun/luci applications/luci-app-dockerman
 
 # Themes
 git_clone 18.06 https://github.com/kiddin9/luci-theme-edge
