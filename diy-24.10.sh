@@ -194,7 +194,7 @@ echo "OPENWRT_PATH=$PWD" >>$GITHUB_ENV
 
 # Add iStore feed source
 #sed -i '$a src-git istore https://github.com/linkease/istore;main' feeds.conf.default
-#sed -i '$a src-git nas https://github.com/linkease/nas-packages.git;master' feeds.conf.default
+sed -i '$a src-git nas https://github.com/linkease/nas-packages.git;master' feeds.conf.default
 #sed -i '$a src-git nas_luci https://github.com/linkease/nas-packages-luci.git;main' feeds.conf.default
 
 # 生成全局变量
@@ -283,7 +283,7 @@ git_clone https://github.com/sbwml/packages_lang_golang golang
 clone_all https://github.com/linkease/istore-ui
 clone_all https://github.com/linkease/istore luci
 clone_all https://github.com/linkease/nas-packages-luci luci
-clone_all https://github.com/linkease/nas-packages
+#clone_all https://github.com/linkease/nas-packages
 
 clone_all https://github.com/brvphoenix/luci-app-wrtbwmon
 clone_all https://github.com/brvphoenix/wrtbwmon

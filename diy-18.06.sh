@@ -196,7 +196,7 @@ sed -i '/luci/s/^#//; /luci.git;openwrt/s/^/#/' feeds.conf.default
 
 # Add iStore feed source
 #sed -i '$a src-git istore https://github.com/linkease/istore;main' feeds.conf.default
-#sed -i '$a src-git nas https://github.com/linkease/nas-packages.git;master' feeds.conf.default
+sed -i '$a src-git nas https://github.com/linkease/nas-packages.git;master' feeds.conf.default
 #sed -i '$a src-git nas_luci https://github.com/linkease/nas-packages-luci.git;main' feeds.conf.default
 
 # 生成全局变量
@@ -289,7 +289,7 @@ git_clone https://github.com/ximiTech/msd_lite
 clone_all https://github.com/linkease/istore-ui
 clone_all https://github.com/linkease/istore luci
 clone_all https://github.com/linkease/nas-packages-luci luci
-clone_all https://github.com/linkease/nas-packages
+#clone_all https://github.com/linkease/nas-packages
 
 # 应用过滤(OAF)
 clone_all master https://github.com/destan19/OpenAppFilter
