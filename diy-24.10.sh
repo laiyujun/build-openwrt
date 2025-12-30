@@ -282,7 +282,7 @@ git_clone https://github.com/sbwml/packages_lang_golang golang
 # iStore
 clone_all https://github.com/linkease/istore-ui
 clone_all https://github.com/linkease/istore luci
-clone_all https://github.com/linkease/nas-packages-luci luci
+#clone_all https://github.com/linkease/nas-packages-luci luci
 #clone_all https://github.com/linkease/nas-packages
 #iStorex && dependency
 git_sparse_clone main https://github.com/linkease/nas-packages-luci luci/luci-app-istorex
