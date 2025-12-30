@@ -196,7 +196,7 @@ sed -i '/luci/s/^#//; /luci.git;openwrt/s/^/#/' feeds.conf.default
 
 # Add iStore feed source
 #sed -i '$a src-git istore https://github.com/linkease/istore;main' feeds.conf.default
-sed -i '$a src-git nas https://github.com/linkease/nas-packages.git;master' feeds.conf.default
+#sed -i '$a src-git nas https://github.com/linkease/nas-packages.git;master' feeds.conf.default
 #sed -i '$a src-git nas_luci https://github.com/linkease/nas-packages-luci.git;main' feeds.conf.default
 
 # 生成全局变量
