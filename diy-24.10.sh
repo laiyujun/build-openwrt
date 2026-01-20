@@ -42,13 +42,11 @@ status() {
 }
 
 find_dir() {
-    find $1 -maxdepth 3 -type d -name $2 -print -quit 2>/dev/null
+    find "$1" -maxdepth 3 -type d -name "$2" -print -quit 2>/dev/null
 }
 
 print_info() {
-    printf "%s %-40s %s %s %s\n" $1 $2 $3 $4 $5
-    # read -r param1 param2 param3 param4 param5 <<< $1
-    # printf "%s %-40s %s %s %s\n" $param1 $param2 $param3 $param4 $param5
+    printf "%s %-40s %s %s %s\n" "$1" "$2" "$3" "$4" "$5"
 }
 
 # 添加整个源仓库(git clone)
@@ -62,23 +60,20 @@ git_clone() {
         repo_url="$2"
         shift 2
     fi
-    if [[ -n "$@" ]]; then
-        target_dir="$@"
-    else
-        target_dir="${repo_url##*/}"
-    fi
-    git clone -q $branch --depth=1 $repo_url $target_dir 2>/dev/null || {
-        print_info $(color cr 拉取) $repo_url [ $(color cr ✕) ]
-        return 0
+    target_dir="${1:-${repo_url##*/}}"
+    git clone -q $branch --depth=1 "$repo_url" "$target_dir" 2>/dev/null || {
+        print_info $(color cr 拉取) "$repo_url" [ $(color cr ✖) ]
+        return 1
     }
     rm -rf $target_dir/{.git*,README*.md,LICENSE}
     current_dir=$(find_dir "package/ feeds/ target/" "$target_dir")
-    if ([[ -d $current_dir ]] && rm -rf $current_dir); then
-        mv -f $target_dir ${current_dir%/*}
-        print_info $(color cg 替换) $target_dir [ $(color cg ✔) ]
+    if [[ -d "$current_dir" ]]; then
+        rm -rf "$current_dir"
+        mv -f "$target_dir" "${current_dir%/*}"
+        print_info $(color cg 替换) "$target_dir" [ $(color cg ✔) ]
     else
-        mv -f $target_dir $destination_dir
-        print_info $(color cb 添加) $target_dir [ $(color cb ✔) ]
+        mv -f "$target_dir" "$destination_dir"
+        print_info $(color cb 添加) "$target_dir" [ $(color cb ✔) ]
     fi
 }
 
@@ -93,32 +88,34 @@ clone_dir() {
         repo_url="$2"
         shift 2
     fi
-    git clone -q $branch --depth=1 $repo_url $temp_dir 2>/dev/null || {
-        print_info $(color cr 拉取) $repo_url [ $(color cr ✕) ]
-        return 0
+    git clone -q $branch --depth=1 "$repo_url" "$temp_dir" 2>/dev/null || {
+        print_info $(color cr 拉取) "$repo_url" [ $(color cr ✖) ]
+        rm -rf "$temp_dir"
+        return 1
     }
     local target_dir source_dir current_dir
     for target_dir in "$@"; do
         source_dir=$(find_dir "$temp_dir" "$target_dir")
         [[ -d $source_dir ]] || \
-        source_dir=$(find $temp_dir -maxdepth 4 -type d -name $target_dir -print -quit) && \
+        source_dir=$(find "$temp_dir" -maxdepth 4 -type d -name "$target_dir" -print -quit) && \
         [[ -d $source_dir ]] || {
-            print_info $(color cr 查找) $target_dir [ $(color cr ✕) ]
+            print_info $(color cr 查找) "$target_dir" [ $(color cr ✖) ]
             continue
         }
         current_dir=$(find_dir "package/ feeds/ target/" "$target_dir")
-        if ([[ -d $current_dir ]] && rm -rf $current_dir); then
-            mv -f $source_dir ${current_dir%/*}
-            print_info $(color cg 替换) $target_dir [ $(color cg ✔) ]
+        if [[ -d "$current_dir" ]]; then
+            rm -rf "$current_dir"
+            mv -f "$source_dir" "${current_dir%/*}"
+            print_info $(color cg 替换) "$target_dir" [ $(color cg ✔) ]
         else
-            mv -f $source_dir $destination_dir
-            print_info $(color cb 添加) $target_dir [ $(color cb ✔) ]
+            mv -f "$source_dir" "$destination_dir"
+            print_info $(color cb 添加) "$target_dir" [ $(color cb ✔) ]
         fi
     done
-    rm -rf $temp_dir
+    rm -rf "$temp_dir"
 }
 
-# 添加源仓库内的所有目录
+# 添加源仓库内的所有子目录
 clone_all() {
     local repo_url branch temp_dir=$(mktemp -d)
     if [[ "$1" == */* ]]; then
@@ -129,23 +126,34 @@ clone_all() {
         repo_url="$2"
         shift 2
     fi
-    git clone -q $branch --depth=1 $repo_url $temp_dir 2>/dev/null || {
-        print_info $(color cr 拉取) $repo_url [ $(color cr ✕) ]
-        return 0
+    git clone -q $branch --depth=1 "$repo_url" "$temp_dir" 2>/dev/null || {
+        print_info $(color cr 拉取) "$repo_url" [ $(color cr ✖) ]
+        rm -rf "$temp_dir"
+        return 1
     }
-    local target_dir source_dir current_dir
-    for target_dir in $(ls -l $temp_dir/$@ | awk '/^d/{print $NF}'); do
-        source_dir=$(find_dir "$temp_dir" "$target_dir")
-        current_dir=$(find_dir "package/ feeds/ target/" "$target_dir")
-        if ([[ -d $current_dir ]] && rm -rf $current_dir); then
-            mv -f $source_dir ${current_dir%/*}
-            print_info $(color cg 替换) $target_dir [ $(color cg ✔) ]
-        else
-            mv -f $source_dir $destination_dir
-            print_info $(color cb 添加) $target_dir [ $(color cb ✔) ]
-        fi
-    done
-    rm -rf $temp_dir
+    process_dir() {
+        while IFS= read -r source_dir; do
+            local target_dir=$(basename "$source_dir")
+            local current_dir=$(find_dir "package/ feeds/ target/" "$target_dir")
+            if [[ -d "$current_dir" ]]; then
+                rm -rf "$current_dir"
+                mv -f "$source_dir" "${current_dir%/*}"
+                print_info $(color cg 替换) "$target_dir" [ $(color cg ✔) ]
+            else
+                mv -f "$source_dir" "$destination_dir"
+                print_info $(color cb 添加) "$target_dir" [ $(color cb ✔) ]
+            fi
+        done < <(find "$1" -maxdepth 1 -mindepth 1 -type d ! -name '.*')
+    }
+    if [[ $# -eq 0 ]]; then
+        process_dir "$temp_dir"
+    else
+        for dir_name in "$@"; do
+            [[ -d "$temp_dir/$dir_name" ]] && process_dir "$temp_dir/$dir_name" || \
+            print_info $(color cr 目录) "$dir_name" [ $(color cr ✖) ]
+        done
+    fi
+    rm -rf "$temp_dir"
 }
 
 # Git稀疏克隆，只克隆指定目录到本地
@@ -165,15 +173,16 @@ function git_sparse_clone() {
 #  for target_dir in $(ls -l $temp_dir/$@ | awk '/^d/{print $NF}'); do
   source_dir=$(find_dir "$temp_dir" "$target_dir")
   current_dir=$(find_dir "package/ feeds/ target/" "$target_dir")
-  if ([[ -d $current_dir ]] && rm -rf $current_dir); then
-      mv -f $source_dir ${current_dir%/*}
-      print_info $(color cg 替换) $target_dir [ $(color cg ✔) ]
+  if [[ -d "$current_dir" ]]; then
+      rm -rf "$current_dir"
+      mv -f "$source_dir" "${current_dir%/*}"
+      print_info $(color cg 替换) "$target_dir" [ $(color cg ✔) ]
   else
-      mv -f $source_dir $destination_dir
-      print_info $(color cb 添加) $target_dir [ $(color cb ✔) ]
+      mv -f "$source_dir" "$destination_dir"
+      print_info $(color cb 添加) "$target_dir" [ $(color cb ✔) ]
   fi
 #  done
-  rm -rf $temp_dir
+  rm -rf "$temp_dir"
 }
 
 # 设置编译源码与分支
