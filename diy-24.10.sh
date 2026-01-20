@@ -296,7 +296,7 @@ clone_all https://github.com/brvphoenix/wrtbwmon
 clone_all master https://github.com/destan19/OpenAppFilter
 
 # 科学上网插件
-clone_all https://github.com/fw876/helloworld shadowsocks-rust
+#clone_all https://github.com/fw876/helloworld shadowsocks-rust
 clone_all https://github.com/Openwrt-Passwall/openwrt-passwall-packages shadowsocks-rust
 clone_all https://github.com/Openwrt-Passwall/openwrt-passwall
 clone_all https://github.com/Openwrt-Passwall/openwrt-passwall2

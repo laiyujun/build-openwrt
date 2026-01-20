@@ -299,7 +299,7 @@ git_sparse_clone master https://github.com/linkease/nas-packages network/service
 clone_all master https://github.com/destan19/OpenAppFilter
 
 # 科学上网插件
-clone_all https://github.com/fw876/helloworld
+#clone_all https://github.com/fw876/helloworld
 clone_all https://github.com/Openwrt-Passwall/openwrt-passwall-packages
 clone_all https://github.com/Openwrt-Passwall/openwrt-passwall
 clone_all https://github.com/Openwrt-Passwall/openwrt-passwall2
