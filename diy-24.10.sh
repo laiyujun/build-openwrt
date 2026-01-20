@@ -57,10 +57,12 @@ status_info() {
     fi
 }
 
+# 查找目录
 find_dir() {
-    find "$1" -maxdepth 3 -type d -name "$2" -print -quit 2>/dev/null
+    find $1 -maxdepth 3 -type d -name "$2" -print -quit 2>/dev/null
 }
 
+# 打印信息
 print_info() {
     printf "%s %-40s %s %s %s\n" "$1" "$2" "$3" "$4" "$5"
 }
