@@ -297,9 +297,9 @@ clone_all master https://github.com/destan19/OpenAppFilter
 
 # 科学上网插件
 clone_all https://github.com/fw876/helloworld shadowsocks-rust
-clone_all https://github.com/xiaorouji/openwrt-passwall-packages shadowsocks-rust
-clone_all https://github.com/xiaorouji/openwrt-passwall
-clone_all https://github.com/xiaorouji/openwrt-passwall2
+clone_all https://github.com/Openwrt-Passwall/openwrt-passwall-packages shadowsocks-rust
+clone_all https://github.com/Openwrt-Passwall/openwrt-passwall
+clone_all https://github.com/Openwrt-Passwall/openwrt-passwall2
 clone_dir https://github.com/vernesong/OpenClash luci-app-openclash
 clone_dir https://github.com/sbwml/openwrt_helloworld shadowsocks-rust
 
