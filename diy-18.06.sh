@@ -17,13 +17,14 @@ fi
 [ -d $GITHUB_WORKSPACE/output ] || mkdir $GITHUB_WORKSPACE/output
 
 color() {
-    case $1 in
-        cr) echo -e "\e[1;31m$2\e[0m" ;;  # 红色
-        cg) echo -e "\e[1;32m$2\e[0m" ;;  # 绿色
-        cy) echo -e "\e[1;33m$2\e[0m" ;;  # 黄色
-        cb) echo -e "\e[1;34m$2\e[0m" ;;  # 蓝色
-        cp) echo -e "\e[1;35m$2\e[0m" ;;  # 紫色
-        cc) echo -e "\e[1;36m$2\e[0m" ;;  # 青色
+    case "$1" in
+        cr) echo -e "\e[1;31m${2}\e[0m" ;;  # 红色
+        cg) echo -e "\e[1;32m${2}\e[0m" ;;  # 绿色
+        cy) echo -e "\e[1;33m${2}\e[0m" ;;  # 黄色
+        cb) echo -e "\e[1;34m${2}\e[0m" ;;  # 蓝色
+        cp) echo -e "\e[1;35m${2}\e[0m" ;;  # 紫色
+        cc) echo -e "\e[1;36m${2}\e[0m" ;;  # 青色
+        cw) echo -e "\e[1;37m${2}\e[0m" ;;  # 白色
     esac
 }
 
@@ -41,13 +42,11 @@ status() {
 }
 
 find_dir() {
-    find $1 -maxdepth 3 -type d -name $2 -print -quit 2>/dev/null
+    find "$1" -maxdepth 3 -type d -name "$2" -print -quit 2>/dev/null
 }
 
 print_info() {
-    printf "%s %-40s %s %s %s\n" $1 $2 $3 $4 $5
-    # read -r param1 param2 param3 param4 param5 <<< $1
-    # printf "%s %-40s %s %s %s\n" $param1 $param2 $param3 $param4 $param5
+    printf "%s %-40s %s %s %s\n" "$1" "$2" "$3" "$4" "$5"
 }
 
 # 添加整个源仓库(git clone)
@@ -151,7 +150,7 @@ clone_all() {
 function git_sparse_clone() {
   branch=$1 repourl=$2 && shift 2
   temp_dir=$(mktemp -d tmp.XXXX) || exit 1
-  git clone -b $branch --depth=1 --filter=blob:none --sparse $repourl $temp_dir
+  git clone -q -b $branch --depth=1 --filter=blob:none --sparse $repourl $temp_dir
   cd $temp_dir || exit
   git sparse-checkout init --cone
   git sparse-checkout set $@ 2>/dev/null || {
@@ -299,11 +298,12 @@ git_sparse_clone master https://github.com/linkease/nas-packages network/service
 clone_all master https://github.com/destan19/OpenAppFilter
 
 # 科学上网插件
-#clone_all https://github.com/fw876/helloworld
+clone_all https://github.com/fw876/helloworld
 clone_all https://github.com/Openwrt-Passwall/openwrt-passwall-packages
 clone_all https://github.com/Openwrt-Passwall/openwrt-passwall
 clone_all https://github.com/Openwrt-Passwall/openwrt-passwall2
 clone_dir https://github.com/vernesong/OpenClash luci-app-openclash
+clone_dir https://github.com/sbwml/openwrt_helloworld xray-core
 
 # luci-app-dockerman: fix unhandled nil on containers page
 git_sparse_clone master https://github.com/laiyujun/luci applications/luci-app-dockerman

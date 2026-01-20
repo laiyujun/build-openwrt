@@ -17,13 +17,14 @@ fi
 [ -d $GITHUB_WORKSPACE/output ] || mkdir $GITHUB_WORKSPACE/output
 
 color() {
-    case $1 in
-        cr) echo -e "\e[1;31m$2\e[0m" ;;  # 红色
-        cg) echo -e "\e[1;32m$2\e[0m" ;;  # 绿色
-        cy) echo -e "\e[1;33m$2\e[0m" ;;  # 黄色
-        cb) echo -e "\e[1;34m$2\e[0m" ;;  # 蓝色
-        cp) echo -e "\e[1;35m$2\e[0m" ;;  # 紫色
-        cc) echo -e "\e[1;36m$2\e[0m" ;;  # 青色
+    case "$1" in
+        cr) echo -e "\e[1;31m${2}\e[0m" ;;  # 红色
+        cg) echo -e "\e[1;32m${2}\e[0m" ;;  # 绿色
+        cy) echo -e "\e[1;33m${2}\e[0m" ;;  # 黄色
+        cb) echo -e "\e[1;34m${2}\e[0m" ;;  # 蓝色
+        cp) echo -e "\e[1;35m${2}\e[0m" ;;  # 紫色
+        cc) echo -e "\e[1;36m${2}\e[0m" ;;  # 青色
+        cw) echo -e "\e[1;37m${2}\e[0m" ;;  # 白色
     esac
 }
 
@@ -151,7 +152,7 @@ clone_all() {
 function git_sparse_clone() {
   branch=$1 repourl=$2 && shift 2
   temp_dir=$(mktemp -d tmp.XXXX) || exit 1
-  git clone -b $branch --depth=1 --filter=blob:none --sparse $repourl $temp_dir
+  git clone -q -b $branch --depth=1 --filter=blob:none --sparse $repourl $temp_dir
   cd $temp_dir || exit
   git sparse-checkout init --cone
   git sparse-checkout set $@ 2>/dev/null || {
