@@ -22,8 +22,10 @@ if [[ "$REBUILD_TOOLCHAIN" = 'true' ]]; then
     exit 0
 fi
 
+# 创建toolchain缓存保存目录
 [ -d "$GITHUB_WORKSPACE/output" ] || mkdir "$GITHUB_WORKSPACE/output"
 
+# 颜色输出
 color() {
     case "$1" in
         cr) echo -e "\e[1;31m${2}\e[0m" ;;  # 红色
