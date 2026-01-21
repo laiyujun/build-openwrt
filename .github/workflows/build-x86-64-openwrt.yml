@@ -89,7 +89,7 @@ jobs:
       APP_CONFIG_FILE: configs/app.config
       DIY_SCRIPT: diy-${{ inputs.source || '18.06' }}.sh
       RELEASE_TAG: ${{ inputs.target || 'x86-64' }}-${{ inputs.source || '18.06' }}
-      TOOLCHAIN_TAG: toolchain
+      TOOLCHAIN_TAG: toolchain-cache
       UPLOAD_BIN_DIR: false
       UPLOAD_TO_ARTIFACT: ${{ inputs.artifact || false }}
       UPLOAD_TO_RELEASE: ${{ inputs.release || true }}
