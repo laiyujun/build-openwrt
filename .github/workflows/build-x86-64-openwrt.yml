@@ -14,7 +14,7 @@ on:
       partsize:
         description: '设置rootfs大小'
         required: false
-        default: 800
+        default: 2048
         type: number
   workflow_dispatch:
     inputs:
@@ -40,7 +40,7 @@ on:
       partsize:
         description: '设置rootfs大小'
         required: false
-        default: 800
+        default: 2048
 
       toolchain:
         description: '使用toolchain缓存'
@@ -81,7 +81,7 @@ jobs:
     env:
       # TARGET_DEVICE: ${{ inputs.target }}
       DEFAULT_IP: ${{ inputs.ip || '192.168.2.8'  }}
-      PART_SIZE: ${{ inputs.partsize || '1024' }}
+      PART_SIZE: ${{ inputs.partsize || '2048' }}
       TOOLCHAIN: ${{ inputs.toolchain || true }}
       ZSH_TOOL: ${{ inputs.zsh_tool || true }}
       CLASH_KERNEL: ${{ inputs.openclash || 'amd64' }}
