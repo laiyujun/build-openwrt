@@ -2,7 +2,7 @@
 
 # 打包toolchain目录
 if [[ "$REBUILD_TOOLCHAIN" = 'true' ]]; then
-    cd $OPENWRT_PATH
+    cd $OPENWRT_PATH || exit
     sed -i 's/ $(tool.*\/stamp-compile)//' Makefile
     if [[ -d ".ccache" && $(du -s .ccache | cut -f1) -gt 0 ]]; then
         echo "🔍 缓存目录大小:"
@@ -82,7 +82,7 @@ git_clone() {
     fi
     target_dir="${1:-${repo_url##*/}}"
     git clone -q $branch --depth=1 "$repo_url" "$target_dir" 2>/dev/null || {
-        print_info $(color cr 拉取) "$repo_url" [ $(color cr ✖) ]
+        print_info "$(color cr "拉取")" "$repo_url" [ "$(color cr ✖)" ]
         return 1
     }
     rm -rf $target_dir/{.git*,README*.md,LICENSE}
@@ -90,10 +90,10 @@ git_clone() {
     if [[ -d "$current_dir" ]]; then
         rm -rf "$current_dir"
         mv -f "$target_dir" "${current_dir%/*}"
-        print_info $(color cg 替换) "$target_dir" [ $(color cg ✔) ]
+        print_info "$(color cg "✎ 替换")" "$target_dir" [ "$(color cg ✔)" ]
     else
         mv -f "$target_dir" "$destination_dir"
-        print_info $(color cb 添加) "$target_dir" [ $(color cb ✔) ]
+        print_info "$(color cb "✚ 添加")" "$target_dir" [ "$(color cb ✔)" ]
     fi
 }
 
@@ -109,7 +109,7 @@ clone_dir() {
         shift 2
     fi
     git clone -q $branch --depth=1 "$repo_url" "$temp_dir" 2>/dev/null || {
-        print_info $(color cr 拉取) "$repo_url" [ $(color cr ✖) ]
+        print_info "$(color cr "拉取")" "$repo_url" [ "$(color cr ✖)" ]
         rm -rf "$temp_dir"
         return 1
     }
@@ -119,17 +119,17 @@ clone_dir() {
         [[ -d $source_dir ]] || \
         source_dir=$(find "$temp_dir" -maxdepth 4 -type d -name "$target_dir" -print -quit) && \
         [[ -d $source_dir ]] || {
-            print_info $(color cr 查找) "$target_dir" [ $(color cr ✖) ]
+            print_info "$(color cr "查找")" "$target_dir" [ "$(color cr ✖)" ]
             continue
         }
         current_dir=$(find_dir "package/ feeds/ target/" "$target_dir")
         if [[ -d "$current_dir" ]]; then
             rm -rf "$current_dir"
             mv -f "$source_dir" "${current_dir%/*}"
-            print_info $(color cg 替换) "$target_dir" [ $(color cg ✔) ]
+            print_info "$(color cg "✎ 替换")" "$target_dir" [ "$(color cg ✔)" ]
         else
             mv -f "$source_dir" "$destination_dir"
-            print_info $(color cb 添加) "$target_dir" [ $(color cb ✔) ]
+            print_info "$(color cb "✚ 添加")" "$target_dir" [ "$(color cb ✔)" ]
         fi
     done
     rm -rf "$temp_dir"
@@ -147,7 +147,7 @@ clone_all() {
         shift 2
     fi
     git clone -q $branch --depth=1 "$repo_url" "$temp_dir" 2>/dev/null || {
-        print_info $(color cr 拉取) "$repo_url" [ $(color cr ✖) ]
+        print_info "$(color cr "拉取")" "$repo_url" [ "$(color cr ✖)" ]
         rm -rf "$temp_dir"
         return 1
     }
@@ -158,10 +158,10 @@ clone_all() {
             if [[ -d "$current_dir" ]]; then
                 rm -rf "$current_dir"
                 mv -f "$source_dir" "${current_dir%/*}"
-                print_info $(color cg 替换) "$target_dir" [ $(color cg ✔) ]
+                print_info "$(color cg "✎ 替换")" "$target_dir" [ "$(color cg ✔)" ]
             else
                 mv -f "$source_dir" "$destination_dir"
-                print_info $(color cb 添加) "$target_dir" [ $(color cb ✔) ]
+                print_info "$(color cb "✚ 添加")" "$target_dir" [ "$(color cb ✔)" ]
             fi
         done < <(find "$1" -maxdepth 1 -mindepth 1 -type d ! -name '.*')
     }
@@ -170,7 +170,7 @@ clone_all() {
     else
         for dir_name in "$@"; do
             [[ -d "$temp_dir/$dir_name" ]] && process_dir "$temp_dir/$dir_name" || \
-            print_info $(color cr 目录) "$dir_name" [ $(color cr ✖) ]
+            print_info "$(color cr "目录")" "$dir_name" [ "$(color cr ✖)" ]
         done
     fi
     rm -rf "$temp_dir"
@@ -184,7 +184,7 @@ function git_sparse_clone() {
   cd $temp_dir || exit
   git sparse-checkout init --cone
   git sparse-checkout set $@ 2>/dev/null || {
-      print_info $(color cr 拉取) $repourl [ $(color cr ✕) ]
+      print_info "$(color cr "拉取")" $repourl [ "$(color cr ✖)" ]
       return 0
   }
   cd .. || exit
@@ -196,10 +196,10 @@ function git_sparse_clone() {
   if [[ -d "$current_dir" ]]; then
       rm -rf "$current_dir"
       mv -f "$source_dir" "${current_dir%/*}"
-      print_info $(color cg 替换) "$target_dir" [ $(color cg ✔) ]
+      print_info "$(color cg "✎ 替换")" "$target_dir" [ "$(color cg ✔)" ]
   else
       mv -f "$source_dir" "$destination_dir"
-      print_info $(color cb 添加) "$target_dir" [ $(color cb ✔) ]
+      print_info "$(color cb "✚ 添加")" "$target_dir" [ "$(color cb ✔)" ]
   fi
 #  done
   rm -rf "$temp_dir"
@@ -256,7 +256,7 @@ clone_source_code() {
     echo "REPO_BRANCH=$REPO_BRANCH" >>$GITHUB_ENV
 
     # 拉取编译源码
-    cd /workdir
+    cd /workdir || exit
     git clone -q -b "$REPO_BRANCH" --single-branch "$REPO_URL" openwrt
     ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
     [ -d openwrt ] && cd openwrt || exit
