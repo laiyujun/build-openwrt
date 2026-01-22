@@ -6,9 +6,9 @@ on:
       source_repo:
         description: '选择要打包的LUCI版本'
         required: true
-        default: '24.10'
+        default: 'lede'
         type: choice
-        options: ['18.06', '24.10']
+        options: ['lede', 'immortalwrt']
 
       script_repo:
         description: '选择打包脚本储存库'
@@ -65,7 +65,7 @@ jobs:
 #      fail-fast: false
 #      matrix:
 #        target: [armv8]
-#        branch: [18.06, 24.10]
+#        branch: [lede, immortalwrt]
 
     env:
       CONFIG_FILE: configs/armv8-${{ inputs.source_repo }}.config
@@ -78,10 +78,10 @@ jobs:
 
     - name: Set Compile Source Code
       run: |
-        if [[ ${{ inputs.source_repo }} == '18.06' ]]; then
+        if [[ ${{ inputs.source_repo }} == 'lede' ]]; then
           echo "REPO_URL=https://github.com/coolsnowwolf/lede" >>$GITHUB_ENV
           echo "REPO_BRANCH=master" >>$GITHUB_ENV
-        elif [[ ${{ inputs.source_repo }} == '24.10' ]]; then
+        elif [[ ${{ inputs.source_repo }} == 'immortalwrt' ]]; then
           echo "REPO_URL=https://github.com/immortalwrt/immortalwrt" >>$GITHUB_ENV
           echo "REPO_BRANCH=openwrt-24.10" >>$GITHUB_ENV
         fi

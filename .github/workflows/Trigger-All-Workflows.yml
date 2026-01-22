@@ -9,20 +9,20 @@ jobs:
   armv8-lede:
     uses: ./.github/workflows/build-armv8-openwrt.yml
     with:
-      source: '18.06'
+      source: 'lede'
   armv8-Immortal:
     uses: ./.github/workflows/build-armv8-openwrt.yml
     with:
-      source: '24.10'
+      source: 'immortalwrt'
   x86-64-lede:
     uses: ./.github/workflows/build-x86-64-openwrt.yml
     with:
-      source: '18.06'
+      source: 'lede'
       partsize: 2048
   x86-64-Immortal:
     uses: ./.github/workflows/build-x86-64-openwrt.yml
     with:
-      source: '24.10'
+      source: 'immortalwrt'
       partsize: 2048
 
   Delete-Old-Workflows:
