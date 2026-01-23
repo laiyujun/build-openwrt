@@ -337,9 +337,8 @@ add_custom_packages() {
 
     # 添加额外插件
     clone_dir openwrt-23.05 https://github.com/coolsnowwolf/luci luci-app-adguardhome
-    git_clone https://github.com/immortalwrt/homeproxy luci-app-homeproxy
-    clone_all https://github.com/nikkinikki-org/OpenWrt-nikki
-    clone_all https://github.com/QiuSimons/luci-app-daed PIC
+    clone_all https://github.com/lwb1978/openwrt-gecoosac
+    clone_dir https://github.com/sirpdboy/luci-app-ddns-go ddns-go luci-app-ddns-go
 
     clone_all https://github.com/sbwml/luci-app-openlist2
     clone_all https://github.com/sbwml/luci-app-mosdns
@@ -362,17 +361,25 @@ add_custom_packages() {
     clone_all master https://github.com/destan19/OpenAppFilter
 
     # 科学上网插件
-    #clone_all https://github.com/fw876/helloworld shadowsocks-rust
-    clone_all https://github.com/Openwrt-Passwall/openwrt-passwall-packages shadowsocks-rust
+    clone_all https://github.com/fw876/helloworld
+    clone_all https://github.com/Openwrt-Passwall/openwrt-passwall-packages
     clone_all https://github.com/Openwrt-Passwall/openwrt-passwall
     clone_all https://github.com/Openwrt-Passwall/openwrt-passwall2
     clone_dir https://github.com/vernesong/OpenClash luci-app-openclash
-    clone_dir https://github.com/sbwml/openwrt_helloworld shadowsocks-rust
+    clone_all https://github.com/nikkinikki-org/OpenWrt-nikki
+    clone_all https://github.com/nikkinikki-org/OpenWrt-momo
+    clone_dir https://github.com/QiuSimons/luci-app-daed daed luci-app-daed
+    git_clone https://github.com/immortalwrt/homeproxy luci-app-homeproxy
+    clone_dir https://github.com/sbwml/openwrt_helloworld xray-core
 
     # Themes
     git_clone https://github.com/kiddin9/luci-theme-edge
     git_clone https://github.com/jerrykuku/luci-theme-argon
     git_clone https://github.com/jerrykuku/luci-app-argon-config
+    git_clone https://github.com/eamonxg/luci-theme-aurora
+    git_clone https://github.com/eamonxg/luci-app-aurora-config
+    git_clone https://github.com/sirpdboy/luci-theme-kucat
+    git_clone https://github.com/sirpdboy/luci-app-kucat-config
 
     # 晶晨宝盒
     clone_all https://github.com/ophub/luci-app-amlogic
