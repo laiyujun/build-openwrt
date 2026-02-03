@@ -372,7 +372,7 @@ add_custom_packages() {
     clone_dir https://github.com/sbwml/openwrt_helloworld xray-core
 
     # luci-app-dockerman: fix unhandled nil on containers page
-    git_sparse_clone master https://github.com/laiyujun/luci applications/luci-app-dockerman
+    #git_sparse_clone master https://github.com/laiyujun/luci applications/luci-app-dockerman
 
     # Themes
     git_clone 18.06 https://github.com/kiddin9/luci-theme-edge
