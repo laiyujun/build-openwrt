@@ -145,31 +145,13 @@ jobs:
           date -u
           timedatectl status || true
           echo "status=success" >> ${GITHUB_OUTPUT}
-          
-          # 检查 rename 命令是否存在
-          if ! command -v rename &> /dev/null; then
-            echo "rename command not found, using fallback method"
-          else
-            echo "rename command can be used."
-          fi
 
       - name: Combine Disks
-        run: |
-          MNT_SIZE=$((($(df --block-size=1024 --output=avail /mnt | tail -1) - 1024*1024*1) * 1024))
-          sudo fallocate -l $MNT_SIZE /mnt/mnt.img
-          MNT_NAME=$(sudo losetup -Pf --show /mnt/mnt.img)
-          sudo pvcreate -f $MNT_NAME
-          ROOT_SIZE=$((($(df --block-size=1024 --output=avail / | tail -1) - 1024*1024*4) * 1024))
-          sudo fallocate -l $ROOT_SIZE /root.img
-          ROOT_NAME=$(sudo losetup -Pf --show /root.img)
-          sudo pvcreate -f $ROOT_NAME
-          sudo vgcreate actions $MNT_NAME $ROOT_NAME
-          sudo lvcreate -n disk -l 100%FREE actions
-          LV_NAME=$(sudo lvscan | awk -F "'" '{print $2}')
-          sudo mkfs.btrfs -L combinedisk $LV_NAME
-          sudo mkdir -p /workdir
-          sudo mount -o compress=zstd $LV_NAME /workdir
-          sudo chown -R runner:runner /workdir && df -hT
+        uses: easimon/maximize-build-space@master
+        with:
+          swap-size-mb: 1024
+          temp-reserve-mb: 100
+          root-reserve-mb: 1024
 
       - name: Load Compile Script
         run: chmod +x $DIY_SCRIPT && ./$DIY_SCRIPT
@@ -251,11 +233,11 @@ jobs:
       - name: Organize Files
         if: env.PACKAGED_STATUS == 'success'
         run: |
-          df -hT
+          df -h && cd $OPENWRT_PATH
+          du -h --max-depth=1
           echo "==============================="
-          ls $OPENWRT_PATH/bin/targets/*/*
-          echo "==============================="
-          cd $OPENWRT_PATH/bin/targets/*/*
+          cd $OPENWRT_PATH/bin/targets/*/* && ls
+          echo "==============================="          
           cat config.buildinfo
           cp -rf $OPENWRT_PATH/bin/packages/* packages
           tar -zcf packages.tar.gz packages

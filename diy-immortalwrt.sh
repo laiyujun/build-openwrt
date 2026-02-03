@@ -54,7 +54,7 @@ status_info() {
         printf "%s %-53s %s %s %s %s %s %s %s\n" \
         $(color cy "⏳ $task_name") [ $(color cg ✔) ] $(color cw "$time_info")
     else
-        printf "%s %-53s %s %s %s %s\n" \
+        printf "%s %-53s %s %s %s %s %s %s %s\n" \
         $(color cy "⏳ $task_name") [ $(color cr ✖) ] $(color cw "$time_info")
     fi
 }
@@ -256,9 +256,7 @@ clone_source_code() {
     echo "REPO_BRANCH=$REPO_BRANCH" >>$GITHUB_ENV
 
     # 拉取编译源码
-    cd /workdir || exit
     git clone -q -b "$REPO_BRANCH" --single-branch "$REPO_URL" openwrt
-    ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
     [ -d openwrt ] && cd openwrt || exit
     echo "OPENWRT_PATH=$PWD" >>$GITHUB_ENV
 }
@@ -435,6 +433,9 @@ apply_custom_settings() {
     # 设置nlbwmon独立菜单
     sed -i 's/services\/nlbw/nlbw/g; /path/s/admin\///g' feeds/luci/applications/luci-app-nlbwmon/root/usr/share/luci/menu.d/luci-app-nlbwmon.json
     sed -i 's/services\///g' feeds/luci/applications/luci-app-nlbwmon/htdocs/luci-static/resources/view/nlbw/config.js
+
+    # 临时修复rust资源失效(编译时间变长)
+    sed -i 's/download-ci-llvm=true/download-ci-llvm=false/g' feeds/packages/lang/rust/Makefile
 
     # 修改qca-nss-drv启动顺序
     drv_path="feeds/nss_packages/qca-nss-drv/files/qca-nss-drv.init"
