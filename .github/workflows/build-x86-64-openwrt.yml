@@ -111,13 +111,6 @@ jobs:
           timedatectl status || true
           echo "status=success" >> ${GITHUB_OUTPUT}
 
-      - name: Combine Disks
-        uses: easimon/maximize-build-space@master
-        with:
-          swap-size-mb: 1024
-          temp-reserve-mb: 100
-          root-reserve-mb: 1024
-
       - name: Load Compile Script
         run: chmod +x $DIY_SCRIPT && ./$DIY_SCRIPT
 
