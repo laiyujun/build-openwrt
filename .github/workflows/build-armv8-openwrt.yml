@@ -146,6 +146,22 @@ jobs:
           timedatectl status || true
           echo "status=success" >> ${GITHUB_OUTPUT}
 
+      - name: Combine Disks
+        run: |
+          mnt_size=$(($(df -k --output=avail /mnt | tail -1) / 1024 - 1024))
+          sudo truncate -s ${mnt_size}M /mnt/mnt.img
+          loop_mnt=$(sudo losetup -f --show /mnt/mnt.img)
+          root_size=$(($(df -k --output=avail / | tail -1) / 1024 - 4096))
+          sudo truncate -s ${root_size}M /root.img
+          loop_root=$(sudo losetup -f --show /root.img)
+          sudo pvcreate -f $loop_mnt $loop_root
+          sudo vgcreate github $loop_mnt $loop_root
+          sudo lvcreate -n runner -l 100%FREE github
+          sudo mkfs.btrfs -f /dev/github/runner
+          sudo mkdir -p /workdir
+          sudo mount -o compress=zstd /dev/github/runner /workdir
+          sudo chown -R runner:runner /workdir && df -hT
+
       - name: Load Compile Script
         run: chmod +x $DIY_SCRIPT && ./$DIY_SCRIPT
 
@@ -169,7 +185,7 @@ jobs:
 
       - name: Upload Toolchain To Release
         if: steps.toolchain.conclusion == 'success' || env.OUTPUT_RELEASE == 'true'
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@master
         with:
           name: toolchain-cache
           tag_name: ${{ env.TOOLCHAIN_TAG }}

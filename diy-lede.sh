@@ -256,7 +256,9 @@ clone_source_code() {
     echo "REPO_BRANCH=$REPO_BRANCH" >>$GITHUB_ENV
 
     # 拉取编译源码
+    cd /workdir || exit
     git clone -q -b "$REPO_BRANCH" --single-branch "$REPO_URL" openwrt
+    ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
     [ -d openwrt ] && cd openwrt || exit
     echo "OPENWRT_PATH=$PWD" >>$GITHUB_ENV
 
@@ -367,7 +369,6 @@ add_custom_packages() {
     clone_all https://github.com/Openwrt-Passwall/openwrt-passwall
     clone_all https://github.com/Openwrt-Passwall/openwrt-passwall2
     clone_dir https://github.com/vernesong/OpenClash luci-app-openclash
-    clone_dir https://github.com/sbwml/openwrt_helloworld xray-core
 
     # luci-app-dockerman: fix unhandled nil on containers page
     #git_sparse_clone master https://github.com/laiyujun/luci applications/luci-app-dockerman
