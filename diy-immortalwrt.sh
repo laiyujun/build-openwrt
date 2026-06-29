@@ -339,8 +339,8 @@ add_custom_packages() {
 
     # 添加额外插件
     #git_clone https://github.com/xiaoxiao29/luci-app-adguardhome
-    git_sparse_clone https://github.com/kenzok8/openwrt-packages adguardhome
-    git_sparse_clone https://github.com/kenzok8/openwrt-packages luci-app-adguardhome
+    git_sparse_clone master https://github.com/kenzok8/openwrt-packages adguardhome
+    git_sparse_clone master https://github.com/kenzok8/openwrt-packages luci-app-adguardhome
     clone_all https://github.com/lwb1978/openwrt-gecoosac
     clone_dir https://github.com/sirpdboy/luci-app-ddns-go ddns-go luci-app-ddns-go
 
