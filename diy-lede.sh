@@ -342,7 +342,8 @@ add_custom_packages() {
     #git_clone https://github.com/xiaoxiao29/luci-app-adguardhome
     git_sparse_clone master https://github.com/kenzok8/openwrt-packages adguardhome
     git_sparse_clone master https://github.com/kenzok8/openwrt-packages luci-app-adguardhome
-    clone_all lua https://github.com/sirpdboy/luci-app-ddns-go
+    clone_all https://github.com/openwrt-fork/openwrt-gecoosac
+    clone_dir https://github.com/sirpdboy/luci-app-ddns-go ddns-go luci-app-ddns-go
 
     clone_all https://github.com/sbwml/luci-app-openlist2
     clone_all v5-lua https://github.com/sbwml/luci-app-mosdns
