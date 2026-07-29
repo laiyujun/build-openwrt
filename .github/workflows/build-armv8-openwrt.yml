@@ -100,10 +100,10 @@ jobs:
       TOOLCHAIN: ${{ inputs.toolchain || true }}
       ZSH_TOOL: ${{ inputs.zsh_tool || true }}
       OPENWRT_BOARD: ${{ inputs.openwrt_board || 's905d' }}
-      OPENWRT_KERNEL: ${{ inputs.openwrt_kernel || '6.1.y_6.6.y_6.12.y' }}
+      OPENWRT_KERNEL: ${{ inputs.openwrt_kernel || '6.1.y_6.6.y_6.12.y_6.18.y' }}
       AUTO_KERNEL: ${{ inputs.auto_kernel || true }}
       INPUT_KERNEL: ${{ inputs.input_kernel || '6.6.116' }}
-      KERNEL_REPO: ${{ inputs.kernel_repo || 'laiyujun/kernel' }}
+      KERNEL_REPO: ${{ inputs.kernel_repo || 'ophub/kernel' }}
       KERNEL_USAGE: ${{ inputs.kernel_usage || 'stable' }}
       CONFIG_FILE: configs/armv8-${{ inputs.source || 'lede' }}.config
       APP_CONFIG_FILE: configs/app.config
@@ -227,7 +227,7 @@ jobs:
         if: steps.compile.conclusion == 'success' && env.AUTO_KERNEL == 'true'
         uses: haiibo/flippy-openwrt-actions@main
         env:
-          OPENWRT_ARMSR: openwrt/bin/targets/*/*/*rootfs.tar.gz
+          OPENWRT_ARMSR: ${{ env.OPENWRT_PATH }}/bin/targets/*/*/*rootfs.tar.gz
           PACKAGE_SOC: ${{ env.OPENWRT_BOARD }}
           KERNEL_REPO_URL: ${{ env.KERNEL_REPO }}
           KERNEL_VERSION_NAME: ${{ env.OPENWRT_KERNEL }}
@@ -237,7 +237,7 @@ jobs:
         if: steps.compile.conclusion == 'success' && env.AUTO_KERNEL == 'false'
         uses: haiibo/flippy-openwrt-actions@main
         env:
-          OPENWRT_ARMSR: openwrt/bin/targets/*/*/*rootfs.tar.gz
+          OPENWRT_ARMSR: ＄{{ OPENWRT_PATH }}/bin/targets/*/*/*rootfs.tar.gz
           PACKAGE_SOC: ${{ env.OPENWRT_BOARD }}
           KERNEL_REPO_URL: ${{ env.KERNEL_REPO }}
           KERNEL_VERSION_NAME: ${{ env.INPUT_KERNEL }}
