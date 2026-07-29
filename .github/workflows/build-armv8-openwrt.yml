@@ -36,7 +36,7 @@ on:
       openwrt_board:
         description: '设置设备(CPU)型号'
         required: false
-        default: 's905d_qemu'
+        default: 's905d'
       openwrt_kernel:
         description: "选择模糊内核版本，和输入的是2选一，取最新"
         required: true
