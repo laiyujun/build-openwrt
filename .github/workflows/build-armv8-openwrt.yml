@@ -223,6 +223,13 @@ jobs:
           name: ${{ env.SOURCE_REPO }}-${{ env.LITE_BRANCH }}-${{ env.DEVICE_TARGET }}-bin-${{ env.FILE_DATE }}
           path: ${{ env.OPENWRT_PATH }}/bin
 
+      - name: Debug before packaging
+        run: |
+          echo "=== OpenWrt target tree ==="
+          ls -lhR openwrt/bin/targets
+          echo "=== Rootfs search ==="
+          find ＄{{ OPENWRT_PATH }}/bin/targets -name "*rootfs.tar.gz"
+
       - name: Packaging OpenWrt For Auto Kernel
         if: steps.compile.conclusion == 'success' && env.AUTO_KERNEL == 'true'
         uses: haiibo/flippy-openwrt-actions@main
