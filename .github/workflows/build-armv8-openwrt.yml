@@ -40,7 +40,7 @@ on:
       openwrt_kernel:
         description: "选择模糊内核版本，和输入的是2选一，取最新"
         required: true
-        default: "6.1.y_6.6.y_6.12.y"
+        default: "6.1.y_6.6.y_6.12.y_6.18.y"
         type: choice
         options:
           - 5.4.y
@@ -49,9 +49,10 @@ on:
           - 6.1.y
           - 6.6.y
           - 6.12.y
+          - 6.18.y
           - 5.4.y_5.10.y_5.15.y
           - 5.15.y_6.1.y
-          - 6.1.y_6.6.y_6.12.y
+          - 6.1.y_6.6.y_6.12.y_6.18.y
       input_kernel:
         description: '输入具体内核版本，和选择的是2选一'
         required: false
@@ -65,7 +66,7 @@ on:
       kernel_repo:
         description: "Set the kernel repository"
         required: true
-        default: "laiyujun/kernel"
+        default: "ophub/kernel"
         type: choice
         options:
           - ophub/kernel
