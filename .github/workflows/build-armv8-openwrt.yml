@@ -228,7 +228,7 @@ jobs:
           echo "=== OpenWrt target tree ==="
           ls -lhR openwrt/bin/targets
           echo "=== Rootfs search ==="
-          find ＄{{ OPENWRT_PATH }}/bin/targets -name "*rootfs.tar.gz"
+          find ${{ env.OPENWRT_PATH }}/bin/targets -name "*rootfs.tar.gz"
 
       - name: Packaging OpenWrt For Auto Kernel
         if: steps.compile.conclusion == 'success' && env.AUTO_KERNEL == 'true'
@@ -244,7 +244,7 @@ jobs:
         if: steps.compile.conclusion == 'success' && env.AUTO_KERNEL == 'false'
         uses: haiibo/flippy-openwrt-actions@main
         env:
-          OPENWRT_ARMSR: ＄{{ OPENWRT_PATH }}/bin/targets/*/*/*rootfs.tar.gz
+          OPENWRT_ARMSR: ${{ env.OPENWRT_PATH }}/bin/targets/*/*/*rootfs.tar.gz
           PACKAGE_SOC: ${{ env.OPENWRT_BOARD }}
           KERNEL_REPO_URL: ${{ env.KERNEL_REPO }}
           KERNEL_VERSION_NAME: ${{ env.INPUT_KERNEL }}
