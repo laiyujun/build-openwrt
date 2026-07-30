@@ -230,6 +230,9 @@ jobs:
           ls -lhR openwrt/bin/targets
           echo "=== Rootfs search ==="
           find ${{ env.OPENWRT_PATH }}/bin/targets -name "*rootfs.tar.gz"
+          echo "=== Rootfs targz delete ==="
+          rm -f ${{ env.OPENWRT_PATH }}/bin/targets/*/*/*targz-rootfs.tar.gz
+          find ${{ env.OPENWRT_PATH }}/bin/targets -name "*rootfs.tar.gz"
 
       - name: Packaging OpenWrt For Auto Kernel
         if: steps.compile.conclusion == 'success' && env.AUTO_KERNEL == 'true'
