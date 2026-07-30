@@ -44,7 +44,7 @@ jobs:
         id: init
         env:
           DEBIAN_FRONTEND: noninteractive
-        run: sudo timedatectl set-timezone "$TZ"
+        run: date
 
       - name: Delete releases and workflows runs
         uses: ophub/delete-releases-workflows@main

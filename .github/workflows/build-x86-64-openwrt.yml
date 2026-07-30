@@ -106,9 +106,7 @@ jobs:
           sudo -E apt-get -y install dos2unix
           sudo -E apt-get -y install $(curl -fsSL ophub.org/ubuntu2404-make-openwrt-depends)
           sudo -E systemctl daemon-reload
-          sudo timedatectl set-timezone "$TZ"
           date -u
-          timedatectl status || true
           echo "status=success" >> ${GITHUB_OUTPUT}
 
       - name: Combine Disks
