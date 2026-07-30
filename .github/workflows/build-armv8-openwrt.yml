@@ -119,6 +119,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@main
 
+      - run: date   # 已经显示 CST
+
       - name: Check Server Performance
         run: |
           echo "警告⚠"
@@ -144,7 +146,6 @@ jobs:
           sudo -E apt -yqq autoclean
           sudo -E apt -yqq clean
           sudo -E systemctl daemon-reload
-          sudo timedatectl set-timezone "$TZ"        
           echo "status=success" >> ${GITHUB_OUTPUT}
 
       - name: Combine Disks
