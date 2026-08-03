@@ -36,7 +36,7 @@ on:
       openwrt_board:
         description: '设置设备(CPU)型号'
         required: false
-        default: 's905d_qemu'
+        default: 's905d'
       openwrt_kernel:
         description: "选择模糊内核版本，和输入的是2选一，取最新"
         required: true
@@ -108,7 +108,7 @@ jobs:
       DEFAULT_IP: ${{ inputs.ip || '192.168.2.254' }}
       TOOLCHAIN: ${{ inputs.toolchain || true }}
       ZSH_TOOL: ${{ inputs.zsh_tool || true }}
-      OPENWRT_BOARD: ${{ inputs.openwrt_board || 's905d_qemu' }}
+      OPENWRT_BOARD: ${{ inputs.openwrt_board || 's905d' }}
       OPENWRT_KERNEL: ${{ inputs.openwrt_kernel || '6.1.y_6.6.y_6.12.y_6.18.y' }}
       AUTO_KERNEL: ${{ inputs.auto_kernel || true }}
       INPUT_KERNEL: ${{ inputs.input_kernel || '6.18.40' }}
