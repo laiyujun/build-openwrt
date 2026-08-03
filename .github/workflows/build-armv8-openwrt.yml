@@ -56,7 +56,7 @@ on:
       input_kernel:
         description: '输入具体内核版本，和选择的是2选一'
         required: false
-        default: '6.6.116'
+        default: '6.18.40'
         type: string
       auto_kernel:
         description: "Auto use the latest kernel"
@@ -66,7 +66,7 @@ on:
       kernel_repo:
         description: "Set the kernel repository"
         required: true
-        default: "ophub/kernel"
+        default: "laiyujun/kernel"
         type: choice
         options:
           - ophub/kernel
@@ -111,8 +111,8 @@ jobs:
       OPENWRT_BOARD: ${{ inputs.openwrt_board || 's905d' }}
       OPENWRT_KERNEL: ${{ inputs.openwrt_kernel || '6.1.y_6.6.y_6.12.y_6.18.y' }}
       AUTO_KERNEL: ${{ inputs.auto_kernel || true }}
-      INPUT_KERNEL: ${{ inputs.input_kernel || '6.6.116' }}
-      KERNEL_REPO: ${{ inputs.kernel_repo || 'ophub/kernel' }}
+      INPUT_KERNEL: ${{ inputs.input_kernel || '6.18.40' }}
+      KERNEL_REPO: ${{ inputs.kernel_repo || 'laiyujun/kernel' }}
       KERNEL_USAGE: ${{ inputs.kernel_usage || 'stable' }}
       BUILDER_NAME: ${{ inputs.builder_name || 'flippy' }}
       CONFIG_FILE: configs/armv8-${{ inputs.source || 'lede' }}.config
