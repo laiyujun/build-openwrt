@@ -66,7 +66,7 @@ on:
       openwrt_size:
         description: "Set the rootfs size(Unit: MiB)."
         required: false
-        default: "768"
+        default: "256/768"
       kernel_repo:
         description: "Set the kernel repository"
         required: true
@@ -115,7 +115,7 @@ jobs:
       OPENWRT_BOARD: ${{ inputs.openwrt_board || 's905d' }}
       OPENWRT_KERNEL: ${{ inputs.openwrt_kernel || '6.1.y_6.6.y_6.12.y_6.18.y' }}
       AUTO_KERNEL: ${{ inputs.auto_kernel || true }}
-      OPENWRT_SIZE: ${{ inputs.openwrt_size || '768' }}
+      OPENWRT_SIZE: ${{ inputs.openwrt_size || '256/768' }}
       INPUT_KERNEL: ${{ inputs.input_kernel || '6.18.40' }}
       KERNEL_REPO: ${{ inputs.kernel_repo || 'laiyujun/kernel' }}
       KERNEL_USAGE: ${{ inputs.kernel_usage || 'stable' }}
