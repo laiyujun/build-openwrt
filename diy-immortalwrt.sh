@@ -389,6 +389,12 @@ add_custom_packages() {
     sed -i "s|firmware_repo.*|firmware_repo 'https://github.com/$GITHUB_REPOSITORY'|g" $destination_dir/luci-app-amlogic/root/etc/config/amlogic
     sed -i "s|kernel_path.*|kernel_path 'https://github.com/ophub/kernel'|g" $destination_dir/luci-app-amlogic/root/etc/config/amlogic
     sed -i "s|ARMv8|$RELEASE_TAG|g" $destination_dir/luci-app-amlogic/root/etc/config/amlogic
+    # 拉取luci‑app‑amlogic之后，调整emmc分区的boot&root大小
+    sed -i 's/^ROOT1="1280"/ROOT1="768"/' $destination_dir/luci-app-amlogic/root/usr/sbin/openwrt-install-amlogic
+    sed -i 's/^ROOT2="1280"/ROOT2="768"/' $destination_dir/luci-app-amlogic/root/usr/sbin/openwrt-install-amlogic
+    sed -i 's/BOOT="512"/BOOT="256"/g' $destination_dir/luci-app-amlogic/root/usr/sbin/openwrt-install-amlogic
+    # 打印修改后的值
+    grep -E '^ROOT1|^ROOT2|BOOT=' $destination_dir/luci-app-amlogic/root/usr/sbin/openwrt-install-amlogic
 
     # 修复Makefile路径
     find "$destination_dir" -type f -name "Makefile" | xargs sed -i \
