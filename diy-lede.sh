@@ -296,6 +296,19 @@ set_variable_values() {
     echo "COMMIT_DATE=$(git show -s --date=short --format="时间: %ci")" >>$GITHUB_ENV
     echo "COMMIT_MESSAGE=$(git show -s --date=short --format="内容: %s")" >>$GITHUB_ENV
     echo "COMMIT_HASH=$(git show -s --date=short --format="hash: %H")" >>$GITHUB_ENV
+
+    # 分区boot&rootfs大小配置参数
+    local img_mb="$OPENWRT_SIZE" boot_mb="384" root_mb="960"
+    [[ -n "${img_mb}" ]] && {
+        if [[ "${img_mb}" =~ / ]]; then
+            boot_mb="${img_mb%%/*}"
+            root_mb="${img_mb##*/}"
+        else
+            root_mb="${img_mb}"
+        fi
+    }
+    echo "$boot_mb" >>"$GITHUB_ENV"
+    echo "$root_mb" >>"$GITHUB_ENV"
 }
 
 # 下载部署toolchain缓存
@@ -392,9 +405,9 @@ add_custom_packages() {
     sed -i "s|kernel_path.*|kernel_path 'https://github.com/ophub/kernel'|g" $destination_dir/luci-app-amlogic/root/etc/config/amlogic
     sed -i "s|ARMv8|$RELEASE_TAG|g" $destination_dir/luci-app-amlogic/root/etc/config/amlogic
     # 拉取luci‑app‑amlogic之后，调整emmc分区的boot&root大小
-    sed -i 's/^ROOT1="1280"/ROOT1="768"/' $destination_dir/luci-app-amlogic/root/usr/sbin/openwrt-install-amlogic
-    sed -i 's/^ROOT2="1280"/ROOT2="768"/' $destination_dir/luci-app-amlogic/root/usr/sbin/openwrt-install-amlogic
-    sed -i 's/BOOT="512"/BOOT="256"/g' $destination_dir/luci-app-amlogic/root/usr/sbin/openwrt-install-amlogic
+    sed -i "s/^ROOT1=\"1280\"/ROOT1=\"${root_mb}\"/" $destination_dir/luci-app-amlogic/root/usr/sbin/openwrt-install-amlogic
+    sed -i "s/^ROOT2=\"1280\"/ROOT2=\"${root_mb}\"/" $destination_dir/luci-app-amlogic/root/usr/sbin/openwrt-install-amlogic
+    sed -i "s/BOOT=\"512\"/BOOT=\"${boot_mb}\"/g" $destination_dir/luci-app-amlogic/root/usr/sbin/openwrt-install-amlogic
     # 打印修改后的值
     grep -E '^ROOT1|^ROOT2|BOOT=' $destination_dir/luci-app-amlogic/root/usr/sbin/openwrt-install-amlogic
 
