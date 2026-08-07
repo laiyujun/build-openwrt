@@ -306,8 +306,8 @@ set_variable_values() {
             root_mb="${img_mb}"
         fi
     }
-    echo "boot_mb=$boot_mb" >>"$GITHUB_ENV"
-    echo "root_mb=$root_mb" >>"$GITHUB_ENV"
+    echo "boot_mb=$boot_mb" >>$GITHUB_ENV
+    echo "root_mb=$root_mb" >>$GITHUB_ENV
 }
 
 # 下载部署toolchain缓存
