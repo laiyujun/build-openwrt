@@ -298,7 +298,9 @@ set_variable_values() {
     echo "COMMIT_HASH=$(git show -s --date=short --format="hash: %H")" >>$GITHUB_ENV
 
     # 分区boot&rootfs大小配置参数
-    local img_mb="$OPENWRT_SIZE" boot_mb="384" root_mb="960"
+    local img_mb="$OPENWRT_SIZE"
+    boot_mb="384"
+    root_mb="960"
     [[ -n "${img_mb}" ]] && {
         if [[ "${img_mb}" =~ / ]]; then
             boot_mb="${img_mb%%/*}"
