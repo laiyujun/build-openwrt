@@ -401,15 +401,17 @@ add_custom_packages() {
 
     # 晶晨宝盒
     clone_all https://github.com/ophub/luci-app-amlogic
-    sed -i "s|firmware_repo.*|firmware_repo 'https://github.com/$GITHUB_REPOSITORY'|g" $destination_dir/luci-app-amlogic/root/etc/config/amlogic
-    sed -i "s|kernel_path.*|kernel_path 'https://github.com/ophub/kernel'|g" $destination_dir/luci-app-amlogic/root/etc/config/amlogic
-    sed -i "s|ARMv8|$RELEASE_TAG|g" $destination_dir/luci-app-amlogic/root/etc/config/amlogic
+    local config_script="$destination_dir/luci-app-amlogic/root/etc/config/amlogic"
+    sed -i "s|firmware_repo.*|firmware_repo 'https://github.com/$GITHUB_REPOSITORY'|g" "$config_script"
+    sed -i "s|kernel_path.*|kernel_path 'https://github.com/laiyujun/kernel'|g" "$config_script"
+    sed -i "s|ARMv8|$RELEASE_TAG|g" "$config_script"
     # 拉取luci‑app‑amlogic之后，调整emmc分区的boot&root大小
-    sed -i "s/^ROOT1=\"1280\"/ROOT1=\"${root_mb}\"/" $destination_dir/luci-app-amlogic/root/usr/sbin/openwrt-install-amlogic
-    sed -i "s/^ROOT2=\"1280\"/ROOT2=\"${root_mb}\"/" $destination_dir/luci-app-amlogic/root/usr/sbin/openwrt-install-amlogic
-    sed -i "s/BOOT=\"512\"/BOOT=\"${boot_mb}\"/g" $destination_dir/luci-app-amlogic/root/usr/sbin/openwrt-install-amlogic
+    local install_script="$destination_dir/luci-app-amlogic/root/usr/sbin/openwrt-install-amlogic"
+    sed -i "s/^ROOT1=\"1280\"/ROOT1=\"${root_mb}\"/" "$install_script"
+    sed -i "s/^ROOT2=\"1280\"/ROOT2=\"${root_mb}\"/" "$install_script"
+    sed -i "s/BOOT=\"512\"/BOOT=\"${boot_mb}\"/g" "$install_script"
     # 打印修改后的值
-    grep -E '^ROOT1|^ROOT2|BOOT=' $destination_dir/luci-app-amlogic/root/usr/sbin/openwrt-install-amlogic
+    echo "==== [amlogic] sync emmc-install param boot_mb=${boot_mb} root_mb=${root_mb} ===="
 
     # 修复Makefile路径
     find "$destination_dir" -type f -name "Makefile" | xargs sed -i \
