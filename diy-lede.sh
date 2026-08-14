@@ -263,7 +263,8 @@ clone_source_code() {
     echo "OPENWRT_PATH=$PWD" >>$GITHUB_ENV
 
     # 设置luci版本为18.06
-    sed -i '/luci/s/^#//; /luci.git;openwrt/s/^/#/' feeds.conf.default
+    sed -i '/luci/d' feeds.conf.default
+    sed -i '1a src-git luci https://github.com/coolsnowwolf/luci.git;master' feeds.conf.default
 }
 
 # 设置环境变量
@@ -355,8 +356,7 @@ add_custom_packages() {
 
     # 添加额外插件
     #git_clone https://github.com/xiaoxiao29/luci-app-adguardhome
-    git_sparse_clone master https://github.com/kenzok8/openwrt-packages adguardhome
-    git_sparse_clone master https://github.com/kenzok8/openwrt-packages luci-app-adguardhome
+    clone_dir https://github.com/sirpdboy/luci-app-adguardhome luci-app-adguardhome
     clone_all https://github.com/openwrt-fork/openwrt-gecoosac
     clone_dir https://github.com/sirpdboy/luci-app-ddns-go ddns-go luci-app-ddns-go
 
