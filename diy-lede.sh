@@ -320,8 +320,6 @@ download_toolchain() {
     if [[ "$TOOLCHAIN" = 'true' ]]; then
         cache_xa=$(curl -sL "https://api.github.com/repos/$GITHUB_REPOSITORY/releases" | awk -F '"' '/download_url/{print $4}' | grep "$CACHE_NAME")
         cache_xc=$(curl -sL "https://api.github.com/repos/laiyujun/toolchain-cache/releases" | awk -F '"' '/download_url/{print $4}' | grep "$CACHE_NAME")
-        echo "cache_xa=$cache_xa"
-        echo "cache_xc=$cache_xc"
         if [[ "$cache_xa" || "$cache_xc" ]]; then
             wget -qc -t=3 "${cache_xa:-$cache_xc}"
             if [ -e *.tzst ]; then
@@ -506,8 +504,8 @@ detect_openwrt_arch() {
 preset_openclash_core() {
     CPU_ARCH=$(detect_openwrt_arch ".config")
     if [[ "$CPU_ARCH" =~ ^(amd64|arm64|armv7|armv6|armv5|386|mips64|mips64le|riscv64)$ ]] && grep -q "luci-app-openclash=y" .config; then
-        chmod +x $GITHUB_WORKSPACE/scripts/preset-clash-core.sh
-        $GITHUB_WORKSPACE/scripts/preset-clash-core.sh $CPU_ARCH
+        chmod +x "$GITHUB_WORKSPACE"/scripts/preset-clash-core.sh
+        "$GITHUB_WORKSPACE"/scripts/preset-clash-core.sh "$CPU_ARCH"
     else
         return 99
     fi
@@ -517,8 +515,8 @@ preset_openclash_core() {
 preset_adguardhome_core() {
   CPU_ARCH=$(detect_openwrt_arch ".config")
   if [[ "$CPU_ARCH" =~ ^(amd64|arm64|armv7|armv6|armv5|386|mips64|mips64le|riscv64)$ ]] && grep -q "luci-app-adguardhome=y" .config; then
-      chmod +x $GITHUB_WORKSPACE/scripts/preset-adguard-core.sh
-      $GITHUB_WORKSPACE/scripts/preset-adguard-core.sh $CPU_ARCH
+      chmod +x "$GITHUB_WORKSPACE"/scripts/preset-adguard-core.sh
+      "$GITHUB_WORKSPACE"/scripts/preset-adguard-core.sh "$CPU_ARCH"
   else
       return 99
   fi
@@ -527,8 +525,8 @@ preset_adguardhome_core() {
 # 下载zsh终端工具
 preset_shell_tools() {
     if grep -q "zsh=y" .config; then
-        chmod +x $GITHUB_WORKSPACE/scripts/preset-terminal-tools.sh
-        $GITHUB_WORKSPACE/scripts/preset-terminal-tools.sh
+        chmod +x "$GITHUB_WORKSPACE"/scripts/preset-terminal-tools.sh
+        "$GITHUB_WORKSPACE"/scripts/preset-terminal-tools.sh
     else
         return 99
     fi

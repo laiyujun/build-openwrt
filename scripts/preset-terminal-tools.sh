@@ -11,4 +11,4 @@ git clone -q https://github.com/zsh-users/zsh-syntax-highlighting files/root/.oh
 git clone -q https://github.com/zsh-users/zsh-completions files/root/.oh-my-zsh/custom/plugins/zsh-completions
 
 # Get .zshrc dotfile
-cp $GITHUB_WORKSPACE/scripts/.zshrc files/root
+cp "$GITHUB_WORKSPACE"/scripts/.zshrc files/root
