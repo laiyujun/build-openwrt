@@ -173,7 +173,7 @@ jobs:
       if: env.PACKAGED_STATUS == 'success' && inputs.upload_release == 'true'
       uses: ncipollo/release-action@main
       with:
-        name: ${{ env.DATE }} for ${{ env.DEVICE_TARGET }}
+        name: ${{ env.RELEASE_TAG }} at ${{ env.DATE }}
         allowUpdates: true
         removeArtifacts: true
         tag: ${{ env.RELEASE_TAG }}
