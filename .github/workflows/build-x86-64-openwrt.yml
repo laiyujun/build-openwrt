@@ -130,6 +130,13 @@ jobs:
       - name: Load Compile Script
         run: chmod +x $DIY_SCRIPT && ./$DIY_SCRIPT
 
+      - name: Patch Docker For x86_64
+        run: |
+          cd $OPENWRT_PATH
+          # 临时打补丁修复x86的Docker编译错误
+          mkdir -p ./feeds/packages/utils/dockerd/patches
+          wget -O ./feeds/packages/utils/dockerd/patches/001-skip-copy-nested-binaries.patch https://raw.githubusercontent.com/AndyChiang888/packages/refs/heads/dockerd/utils/dockerd/patches/001-skip-copy-nested-binaries.patch
+
       - name: Compile Toolchain
         if: env.REBUILD_TOOLCHAIN == 'true'
         id: toolchain
