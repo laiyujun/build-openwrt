@@ -398,6 +398,7 @@ add_custom_packages() {
     clone_dir https://github.com/xiaoqingfengATGH/luci-theme-infinityfreedom luci-theme-infinityfreedom-ng
     clone_dir https://github.com/haiibo/packages luci-theme-opentomcat
     git_clone main https://github.com/thinktip/luci-theme-neobird
+    git_clone main https://github.com/anothaDev/luci-theme-vantage
 
     # 晶晨宝盒
     clone_all https://github.com/ophub/luci-app-amlogic

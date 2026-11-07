@@ -395,6 +395,7 @@ add_custom_packages() {
     git_clone https://github.com/eamonxg/luci-app-aurora-config
     git_clone https://github.com/sirpdboy/luci-theme-kucat
     git_clone https://github.com/sirpdboy/luci-app-kucat-config
+    git_clone https://github.com/anothaDev/luci-theme-vantage
 
     # 晶晨宝盒
     clone_all https://github.com/ophub/luci-app-amlogic
