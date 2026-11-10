@@ -262,9 +262,10 @@ clone_source_code() {
     [ -d openwrt ] && cd openwrt || exit
     echo "OPENWRT_PATH=$PWD" >>$GITHUB_ENV
 
-    # 设置luci版本为18.06
-    sed -i '/luci/d' feeds.conf.default
-    sed -i '1a src-git luci https://github.com/coolsnowwolf/luci.git;master' feeds.conf.default
+    # 不再覆盖 luci feed：coolsnowwolf/lede master 自带的 feeds.conf.default 已把 luci
+    # 指定为 openwrt-25.12 分支（与 lede master 配套）。此前强行换成 master 会使
+    # luci-app-firewall 硬绑破裂的 legacy firewall3，导致 x86/armv8 编译在 package/install
+    # 阶段失败。保留 LEDE 官方指定分支即可走其默认 firewall4，破裂的 firewall3 依赖不再被触发。
 }
 
 # 设置环境变量
@@ -435,21 +436,11 @@ apply_custom_settings() {
 
     [ -e "$GITHUB_WORKSPACE/files" ] && mv "$GITHUB_WORKSPACE/files" files
 
-    # 修复 LEDE master 的 firewall3 依赖链断链（x86/armv8 等非 BCM 目标上 firewall
-    # 与 luci 在 package/install 阶段装不上）。firewall3 的 DEPENDS 硬写了两个
-    # legacy iptables 扩展依赖：
-    #   1) +iptables-mod-fullconenat —— 该独立包在 coolsnowwolf/lede master 已被移除
-    #      （fullconenat 用户态能力已通过 patches/900-bcm-fullconenat.patch 编入主
-    #      iptables 的 MASQUERADE 扩展，即 --mode fullcone|symmetric，无需独立包）。
-    #      这是"失效悬空依赖"，必须删除。
-    #   2) +iptables-mod-conntrack-extra —— 该包本身真实存在，我们【不】删除这条依赖
-    #      （删了会牺牲 connbytes/connlimit/recent 等扩展匹配，部分代理插件可能用到）。
-    #      它装不上的真正原因是其内核模块（kmod-ipt-raw=CONFIG_IP_NF_RAW、
-    #      kmod-ipt-conntrack-extra=KCONFIG_IPT_CONNTRACK_EXTRA）在 LEDE 默认 nftables
-    #      路线下未被开启，导致该 ipk 无法生成、在最终包索引里被排除。改法见
-    #      update_config_file()：显式开启这两个内核模块，使 ipk 正常生成、依赖满足。
-    # 只删除 fullconenat 一条悬空依赖；不动防火墙后端，仍保留 legacy + fullconenat 栈。
-    sed -i 's/ +iptables-mod-fullconenat//' package/network/config/firewall/Makefile
+    # 注：不再修改 package/network/config/firewall/Makefile。此前为绕过 LEDE 上被强行
+    #     拉入的 legacy firewall3 的断链依赖而 sed 改造它，但根因是 diy 脚本把 luci 换成了
+    #     master 分支（其 luci-app-firewall 硬绑 firewall3）。现已对齐回 LEDE 指定的
+    #     openwrt-25.12（见 clone_source_code），构建走默认 firewall4，firewall3 不再被强制
+    #     拉入，故无需再改 firewall 的 Makefile。
 
     # 设置固件rootfs大小
     if [ "$PART_SIZE" ]; then
@@ -498,19 +489,9 @@ update_config_file() {
     [ -e "$GITHUB_WORKSPACE/$CONFIG_FILE" ] && cp -f "$GITHUB_WORKSPACE/$CONFIG_FILE" .config
     [ -e "$GITHUB_WORKSPACE/$APP_CONFIG_FILE" ] && echo "$(cat $GITHUB_WORKSPACE/$APP_CONFIG_FILE)" >> .config
 
-    # 让 firewall3 的 +iptables-mod-conntrack-extra 硬依赖可被满足：该 ipk 依赖两个
-    # 内核模块 kmod-ipt-raw(CONFIG_IP_NF_RAW) 与 kmod-ipt-conntrack-extra
-    # (KCONFIG_IPT_CONNTRACK_EXTRA)，而在 LEDE 默认 nftables 路线下它们未被开启，
-    # 导致该 ipk 无法生成、被排除出包索引，进而 firewall3/luci 在 install 阶段装不上。
-    # 这里显式选上这三者，使 make defconfig 能把这些 KCONFIG 打开、ipk 正常生成、
-    # 依赖链闭合。保留 firewall3 的这条依赖（不删），connbytes/connlimit/recent 等
-    # 扩展匹配能力也得以保留。若 defconfig 后仍报 conntrack-extra 缺失，说明 KCONFIG
-    # 未能自动开启，再到此处强制开启对应内核选项。
-    cat >> .config <<'EOF'
-CONFIG_PACKAGE_iptables-mod-conntrack-extra=y
-CONFIG_PACKAGE_kmod-ipt-conntrack-extra=y
-CONFIG_PACKAGE_kmod-ipt-raw=y
-EOF
+    # 注：不再显式选 iptables-mod-conntrack-extra 及其内核模块。该选择原为让被强行拉入的
+    #     legacy firewall3 的依赖可满足；现 luci 已对齐 openwrt-25.12、构建走默认 firewall4，
+    #     无需再为 firewall3 补依赖。
 
     make defconfig 1>/dev/null 2>&1
 }
