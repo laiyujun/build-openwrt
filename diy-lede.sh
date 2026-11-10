@@ -435,13 +435,21 @@ apply_custom_settings() {
 
     [ -e "$GITHUB_WORKSPACE/files" ] && mv "$GITHUB_WORKSPACE/files" files
 
-    # 修复 LEDE master 的 firewall3 悬空依赖：firewall 的 DEPENDS 硬写了
-    # +iptables-mod-fullconenat，但该包在 coolsnowwolf/lede master 已被移除
-    # （fullconenat 用户态能力已通过 patches/900-bcm-fullconenat.patch 编入主 iptables
-    #  的 MASQUERADE 扩展，即 --mode fullcone|symmetric，无需独立包）。这条失效依赖会让
-    #  x86/armv8 等非 BCM 目标上 firewall 无法安装、连带 luci/luci-app-firewall 也装不上。
-    #  移除它即可，fullconenat 能力不受影响；firewall3 的其余依赖（含 conntrack-extra）照常。
-    sed -i 's/ +iptables-mod-fullconenat//' package/network/config/firewall/Makefile
+    # 修复 LEDE master 的 firewall3 依赖链断链（x86/armv8 等非 BCM 目标上 firewall
+    # 与 luci 在 package/install 阶段装不上）。firewall3 的 DEPENDS 硬写了两个
+    # legacy iptables 扩展依赖：
+    #   1) +iptables-mod-fullconenat —— 该独立包在 coolsnowwolf/lede master 已被移除
+    #      （fullconenat 用户态能力已通过 patches/900-bcm-fullconenat.patch 编入主
+    #      iptables 的 MASQUERADE 扩展，即 --mode fullcone|symmetric，无需独立包）。
+    #      这是"失效悬空依赖"，必须删除。
+    #   2) +iptables-mod-conntrack-extra —— 该包本身存在，但它依赖的内核模块
+    #      (kmod-ipt-raw=CONFIG_IP_NF_RAW、kmod-ipt-conntrack-extra=KCONFIG_IPT_CONNTRACK_EXTRA)
+    #      在 LEDE 默认 nftables 路线下未被开启，导致该 ipk 无法生成、在最终包索引里被
+    #      排除。删除这条硬依赖即可解除 install 阶段断链；其扩展匹配（connbytes/connlimit/
+    #      connmark/recent/helper）并非 firewall3 核心功能所需（核心 NAT/MASQUERADE 含
+    #      fullconenat 由基础 kmod-ipt-conntrack/nat 提供），如需可后续显式选包。
+    # 删除这两项后 firewall3 能正常编译安装；不动防火墙后端，仍保留 legacy + fullconenat 栈。
+    sed -i 's/ +iptables-mod-fullconenat//; s/ +iptables-mod-conntrack-extra//' package/network/config/firewall/Makefile
 
     # 设置固件rootfs大小
     if [ "$PART_SIZE" ]; then
@@ -489,6 +497,18 @@ apply_custom_settings() {
 update_config_file() {
     [ -e "$GITHUB_WORKSPACE/$CONFIG_FILE" ] && cp -f "$GITHUB_WORKSPACE/$CONFIG_FILE" .config
     [ -e "$GITHUB_WORKSPACE/$APP_CONFIG_FILE" ] && echo "$(cat $GITHUB_WORKSPACE/$APP_CONFIG_FILE)" >> .config
+
+    # 尽力补齐 legacy iptables 的 conntrack-extra 及其内核模块。若 LEDE 内核在
+    # make defconfig 阶段能自动开启对应 KCONFIG（CONFIG_IP_NF_RAW /
+    # KCONFIG_IPT_CONNTRACK_EXTRA），这些扩展会被构建，用户获得 connbytes/connlimit
+    # 等完整能力。即使内核未开启、ipk 不生成，firewall3 已不再硬依赖它（见上方 sed），
+    # 编译与安装仍不受影响——此处仅为“尽量保留功能”的尝试。
+    cat >> .config <<'EOF'
+CONFIG_PACKAGE_iptables-mod-conntrack-extra=y
+CONFIG_PACKAGE_kmod-ipt-conntrack-extra=y
+CONFIG_PACKAGE_kmod-ipt-raw=y
+EOF
+
     make defconfig 1>/dev/null 2>&1
 }
 
