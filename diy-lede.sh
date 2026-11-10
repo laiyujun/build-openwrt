@@ -435,6 +435,14 @@ apply_custom_settings() {
 
     [ -e "$GITHUB_WORKSPACE/files" ] && mv "$GITHUB_WORKSPACE/files" files
 
+    # 修复 LEDE master 的 firewall3 悬空依赖：firewall 的 DEPENDS 硬写了
+    # +iptables-mod-fullconenat，但该包在 coolsnowwolf/lede master 已被移除
+    # （fullconenat 用户态能力已通过 patches/900-bcm-fullconenat.patch 编入主 iptables
+    #  的 MASQUERADE 扩展，即 --mode fullcone|symmetric，无需独立包）。这条失效依赖会让
+    #  x86/armv8 等非 BCM 目标上 firewall 无法安装、连带 luci/luci-app-firewall 也装不上。
+    #  移除它即可，fullconenat 能力不受影响；firewall3 的其余依赖（含 conntrack-extra）照常。
+    sed -i 's/ +iptables-mod-fullconenat//' package/network/config/firewall/Makefile
+
     # 设置固件rootfs大小
     if [ "$PART_SIZE" ]; then
         sed -i '/ROOTFS_PARTSIZE/d' "$GITHUB_WORKSPACE/$CONFIG_FILE"
