@@ -344,20 +344,34 @@ query_toolchain_cache() {
         return 2
     fi
 
-    # 保留原有 /download_url/ 解析（实际子串匹配 browser_download_url），确保行为兼容
-    url=$(printf '%s\n' "$body_only" | awk -F '"' '/download_url/{print $4}' | grep "$CACHE_NAME" | head -1)
+    # 提取与 CACHE_NAME 匹配的 browser_download_url 及其 digest。
+    # 关键：认证请求的 /releases 响应是紧凑单行 JSON，不能用 awk 按行取 $4
+    # （那样 $4 会是首个 "url" 字段即 API 地址，永远匹配不到缓存名 → 误判无缓存 → 全量重编）；
+    # mawk 也不支持多字符 RS，按 "name": 拆记录同样失效。
+    # 改用 python3 解析 JSON（Actions runner 预装，OpenWrt 编译本身依赖它），
+    # 按资产 name 精确匹配，一次取回 digest 与下载地址，兼容单行/多行响应格式。
+    local parsed
+    parsed=$(python3 -c '
+import json, sys
+try:
+    data = json.load(sys.stdin)
+except Exception:
+    sys.exit(0)
+target = sys.argv[1] + ".tzst"
+releases = data if isinstance(data, list) else [data]
+for rel in releases:
+    if not isinstance(rel, dict):
+        continue
+    for asset in rel.get("assets", []):
+        if asset.get("name") == target:
+            digest = (asset.get("digest") or "").replace("sha256:", "")
+            url = asset.get("browser_download_url") or ""
+            sys.stdout.write(digest + "\t" + url)
+            sys.exit(0)
+' "$CACHE_NAME" <<<"$body_only")
+    [[ -n "$parsed" ]] || return 3
+    IFS=$'\t' read -r digest url <<<"$parsed"
     [[ -n "$url" ]] || return 3
-
-    # 从同一 asset 对象取 digest（字段顺序 name -> digest -> browser_download_url）
-    digest=$(printf '%s\n' "$body_only" | awk -v target="$CACHE_NAME.tzst" '
-        /"digest":/ { d=$0; sub(/^[^:]*: *"/,"",d); sub(/".*$/,"",d) }
-        /"browser_download_url":/ {
-            u=$0; sub(/^[^:]*: *"/,"",u); sub(/".*$/,"",u)
-            if (index(u, target) > 0 && index(d, "sha256:") == 1) {
-                sub(/^sha256:/,"",d); print d; exit
-            }
-        }
-    ')
     printf '%s\t%s\n' "$digest" "$url"
     return 0
 }
