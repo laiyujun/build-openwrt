@@ -312,69 +312,10 @@ set_variable_values() {
     echo "root_mb=$root_mb" >>$GITHUB_ENV
 }
 
-# 查询 release 中与 CACHE_NAME 匹配的缓存资产
-# 输出 "<sha256>\t<download_url>"（资产无 digest 时第一列为空）
-# 返回码: 0=命中  2=查询失败(网络/HTTP/限流)  3=查询成功但无匹配资产
-query_toolchain_cache() {
-    local repo="$1" api_body http_code body_only curl_rc url digest
-    local -a curl_opts=(-sSL --connect-timeout 15 --max-time 90 --retry 3 --retry-delay 3)
-
-    # 有 token 时把匿名 60 次/小时提到 5000 次/小时；无 token 时保持原匿名行为
-    if [[ -n "${GITHUB_TOKEN:-}" ]]; then
-        curl_opts+=(-H "Authorization: Bearer $GITHUB_TOKEN")
-    fi
-    curl_opts+=(-H "Accept: application/vnd.github+json" -H "User-Agent: toolchain-cache-client" -w '\n%{http_code}')
-
-    api_body=$(curl "${curl_opts[@]}" "https://api.github.com/repos/$repo/releases" 2>/dev/null)
-    curl_rc=$?
-    if [[ $curl_rc -ne 0 || -z "$api_body" ]]; then
-        echo "    ⚠️ 查询 $repo 缓存失败：curl 退出码 $curl_rc" >&2
-        return 2
-    fi
-    http_code="${api_body##*$'\n'}"
-    body_only="${api_body%$'\n'*}"
-    if [[ "$http_code" != 2* ]]; then
-        echo "    ⚠️ 查询 $repo 缓存失败：HTTP $http_code" >&2
-        [[ "$body_only" == *'"message"'* ]] && \
-            echo "    API 响应：$(printf '%s' "$body_only" | grep -o '"message":[^,}]*' | head -1)" >&2
-        return 2
-    fi
-    if [[ "$body_only" == *'API rate limit exceeded'* ]]; then
-        echo "    ⚠️ 查询 $repo 缓存失败：API 限流" >&2
-        return 2
-    fi
-
-    # 提取与 CACHE_NAME 匹配的 browser_download_url 及其 digest。
-    # 关键：认证请求的 /releases 响应是紧凑单行 JSON，不能用 awk 按行取 $4
-    # （那样 $4 会是首个 "url" 字段即 API 地址，永远匹配不到缓存名 → 误判无缓存 → 全量重编）；
-    # mawk 也不支持多字符 RS，按 "name": 拆记录同样失效。
-    # 改用 python3 解析 JSON（Actions runner 预装，OpenWrt 编译本身依赖它），
-    # 按资产 name 精确匹配，一次取回 digest 与下载地址，兼容单行/多行响应格式。
-    local parsed
-    parsed=$(python3 -c '
-import json, sys
-try:
-    data = json.load(sys.stdin)
-except Exception:
-    sys.exit(0)
-target = sys.argv[1] + ".tzst"
-releases = data if isinstance(data, list) else [data]
-for rel in releases:
-    if not isinstance(rel, dict):
-        continue
-    for asset in rel.get("assets", []):
-        if asset.get("name") == target:
-            digest = (asset.get("digest") or "").replace("sha256:", "")
-            url = asset.get("browser_download_url") or ""
-            sys.stdout.write(digest + "\t" + url)
-            sys.exit(0)
-' "$CACHE_NAME" <<<"$body_only")
-    [[ -n "$parsed" ]] || return 3
-    IFS=$'\t' read -r digest url <<<"$parsed"
-    [[ -n "$url" ]] || return 3
-    printf '%s\t%s\n' "$digest" "$url"
-    return 0
-}
+# 缓存资产按固定 tag（toolchain-cache）+ 本地可推导的 CACHE_NAME.tzst 发布，
+# 下载直接用 release 直链，不再查询 /releases API：
+#   命中 = HTTP 200 下载成功；未命中 = 404（由 wget 退出码 / 空文件判定）。
+# 这样从根上消除 JSON 单行/多行解析差异（曾导致全量重编回归），也不消耗 API 配额。
 
 # 下载并部署一份缓存；成功返回 0，任何环节失败返回 1（由调用方决定回退或重建）
 fetch_and_deploy_toolchain() {
@@ -398,7 +339,7 @@ fetch_and_deploy_toolchain() {
         fi
         echo "    ✅ 缓存 sha256 校验通过"
     else
-        echo "    ⚠️ 资产无 digest 字段，跳过 sha256 校验"
+        echo "    ℹ️ 无 digest（直链下载），跳过 sha256 校验；依赖后续 tar 解压与 tool* 完整性检查兜底"
     fi
 
     if ! tar -I unzstd -xf "$tzst" 2>/dev/null; then
@@ -428,7 +369,7 @@ fetch_and_deploy_toolchain() {
 
 # 下载部署toolchain缓存
 download_toolchain() {
-    local query_a query_c rc_a rc_c url_a digest_a url_c digest_c
+    local url_a url_c
 
     if [[ "$TOOLCHAIN" != 'true' ]]; then
         echo "    ℹ️ TOOLCHAIN 开关关闭，执行完整工具链编译"
@@ -436,36 +377,25 @@ download_toolchain() {
         return 99
     fi
 
-    query_a=$(query_toolchain_cache "$GITHUB_REPOSITORY"); rc_a=$?
-    query_c=$(query_toolchain_cache "laiyujun/toolchain-cache"); rc_c=$?
+    # 固定 tag + 可推导文件名直接拼直链，无需 API 查询：
+    #   主用 = 当前仓库，备用 = laiyujun/toolchain-cache
+    url_a="https://github.com/$GITHUB_REPOSITORY/releases/download/toolchain-cache/$CACHE_NAME.tzst"
+    url_c="https://github.com/laiyujun/toolchain-cache/releases/download/toolchain-cache/$CACHE_NAME.tzst"
 
-    [[ $rc_a -eq 0 ]] && IFS=$'\t' read -r digest_a url_a <<<"$query_a"
-    [[ $rc_c -eq 0 ]] && IFS=$'\t' read -r digest_c url_c <<<"$query_c"
-
-    # 主用优先；主用命中但下载/校验失败时真回退备用（原 ${cache_xa:-$cache_xc} 只取其一）
-    if [[ $rc_a -eq 0 ]]; then
-        echo "    ✅ 主用仓库命中缓存：$url_a"
-        if fetch_and_deploy_toolchain "$url_a" "$digest_a" false; then
-            echo "    ✅ 工具链缓存部署完成（主用）"
-            return 0
-        fi
-        echo "    ⚠️ 主用缓存不可用，尝试备用仓库" >&2
+    # 主用优先；主用下载/解压/校验失败时真回退备用（digest 传空，走直链无 sha256 校验分支）
+    echo "    ⏳ 尝试主用缓存：$url_a"
+    if fetch_and_deploy_toolchain "$url_a" "" false; then
+        echo "    ✅ 工具链缓存部署完成（主用）"
+        return 0
     fi
+    echo "    ⚠️ 主用缓存不可用，尝试备用仓库" >&2
 
-    if [[ $rc_c -eq 0 ]]; then
-        echo "    ✅ 备用仓库命中缓存：$url_c"
-        if fetch_and_deploy_toolchain "$url_c" "$digest_c" true; then
-            echo "    ✅ 工具链缓存部署完成（备用）"
-            return 0
-        fi
-        echo "    ⚠️ 备用缓存不可用" >&2
+    echo "    ⏳ 尝试备用缓存：$url_c"
+    if fetch_and_deploy_toolchain "$url_c" "" true; then
+        echo "    ✅ 工具链缓存部署完成（备用）"
+        return 0
     fi
-
-    # 诊断：区分"查询失败"与"确实无缓存"，避免把 API 故障误判为缓存不存在
-    [[ $rc_a -eq 2 ]] && echo "    ⚠️ 主用仓库查询失败（不等于无缓存）" >&2
-    [[ $rc_a -eq 3 ]] && echo "    ℹ️ 主用仓库无匹配缓存" >&2
-    [[ $rc_c -eq 2 ]] && echo "    ⚠️ 备用仓库查询失败（不等于无缓存）" >&2
-    [[ $rc_c -eq 3 ]] && echo "    ℹ️ 备用仓库无匹配缓存" >&2
+    echo "    ⚠️ 备用缓存不可用" >&2
 
     # 安全兜底：任何未成功部署的路径都必须显式触发编译。
     # 否则 Compile Toolchain 被跳过，后续 make -j 会在空 staging_dir 上隐式全量编译且不上传缓存。
