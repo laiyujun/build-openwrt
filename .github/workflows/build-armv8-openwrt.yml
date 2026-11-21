@@ -111,6 +111,7 @@ jobs:
     env:
       DEFAULT_IP: ${{ inputs.ip || '192.168.2.254' }}
       TOOLCHAIN: ${{ inputs.toolchain || true }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       ZSH_TOOL: ${{ inputs.zsh_tool || true }}
       OPENWRT_BOARD: ${{ inputs.openwrt_board || 's905d' }}
       OPENWRT_KERNEL: ${{ inputs.openwrt_kernel || '6.1.y_6.6.y_6.12.y_6.18.y' }}

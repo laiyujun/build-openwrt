@@ -312,28 +312,152 @@ set_variable_values() {
     echo "root_mb=$root_mb" >>$GITHUB_ENV
 }
 
+# 查询 release 中与 CACHE_NAME 匹配的缓存资产
+# 输出 "<sha256>\t<download_url>"（资产无 digest 时第一列为空）
+# 返回码: 0=命中  2=查询失败(网络/HTTP/限流)  3=查询成功但无匹配资产
+query_toolchain_cache() {
+    local repo="$1" api_body http_code body_only curl_rc url digest
+    local -a curl_opts=(-sSL --connect-timeout 15 --max-time 90 --retry 3 --retry-delay 3)
+
+    # 有 token 时把匿名 60 次/小时提到 5000 次/小时；无 token 时保持原匿名行为
+    if [[ -n "${GITHUB_TOKEN:-}" ]]; then
+        curl_opts+=(-H "Authorization: Bearer $GITHUB_TOKEN")
+    fi
+    curl_opts+=(-H "Accept: application/vnd.github+json" -H "User-Agent: toolchain-cache-client" -w '\n%{http_code}')
+
+    api_body=$(curl "${curl_opts[@]}" "https://api.github.com/repos/$repo/releases" 2>/dev/null)
+    curl_rc=$?
+    if [[ $curl_rc -ne 0 || -z "$api_body" ]]; then
+        echo "    ⚠️ 查询 $repo 缓存失败：curl 退出码 $curl_rc" >&2
+        return 2
+    fi
+    http_code="${api_body##*$'\n'}"
+    body_only="${api_body%$'\n'*}"
+    if [[ "$http_code" != 2* ]]; then
+        echo "    ⚠️ 查询 $repo 缓存失败：HTTP $http_code" >&2
+        [[ "$body_only" == *'"message"'* ]] && \
+            echo "    API 响应：$(printf '%s' "$body_only" | grep -o '"message":[^,}]*' | head -1)" >&2
+        return 2
+    fi
+    if [[ "$body_only" == *'API rate limit exceeded'* ]]; then
+        echo "    ⚠️ 查询 $repo 缓存失败：API 限流" >&2
+        return 2
+    fi
+
+    # 保留原有 /download_url/ 解析（实际子串匹配 browser_download_url），确保行为兼容
+    url=$(printf '%s\n' "$body_only" | awk -F '"' '/download_url/{print $4}' | grep "$CACHE_NAME" | head -1)
+    [[ -n "$url" ]] || return 3
+
+    # 从同一 asset 对象取 digest（字段顺序 name -> digest -> browser_download_url）
+    digest=$(printf '%s\n' "$body_only" | awk -v target="$CACHE_NAME.tzst" '
+        /"digest":/ { d=$0; sub(/^[^:]*: *"/,"",d); sub(/".*$/,"",d) }
+        /"browser_download_url":/ {
+            u=$0; sub(/^[^:]*: *"/,"",u); sub(/".*$/,"",u)
+            if (index(u, target) > 0 && index(d, "sha256:") == 1) {
+                sub(/^sha256:/,"",d); print d; exit
+            }
+        }
+    ')
+    printf '%s\t%s\n' "$digest" "$url"
+    return 0
+}
+
+# 下载并部署一份缓存；成功返回 0，任何环节失败返回 1（由调用方决定回退或重建）
+fetch_and_deploy_toolchain() {
+    local url="$1" expected_sha="$2" from_backup="$3"
+    local tzst="$CACHE_NAME.tzst" actual_sha
+
+    rm -f "$tzst"
+    wget -q --tries=3 --timeout=30 -O "$tzst" "$url"
+    if [[ $? -ne 0 || ! -s "$tzst" ]]; then
+        echo "    ⚠️ 缓存下载失败：$url" >&2
+        rm -f "$tzst"
+        return 1
+    fi
+
+    if [[ -n "$expected_sha" ]]; then
+        actual_sha=$(sha256sum "$tzst" | awk '{print $1}')
+        if [[ "$actual_sha" != "$expected_sha" ]]; then
+            echo "    ⚠️ 缓存 sha256 校验失败：期望 $expected_sha，实际 $actual_sha" >&2
+            rm -f "$tzst"
+            return 1
+        fi
+        echo "    ✅ 缓存 sha256 校验通过"
+    else
+        echo "    ⚠️ 资产无 digest 字段，跳过 sha256 校验"
+    fi
+
+    if ! tar -I unzstd -xf "$tzst" 2>/dev/null; then
+        echo "    ⚠️ zstd 解压失败，回退普通 tar" >&2
+        if ! tar -xf "$tzst" 2>/dev/null; then
+            echo "    ⚠️ 缓存解压失败" >&2
+            rm -f "$tzst"
+            return 1
+        fi
+    fi
+
+    # 打包源为 staging_dir/host* 与 staging_dir/tool*，解压后必须看到 tool* 目录
+    if [[ ! -d staging_dir ]] || [[ -z "$(find staging_dir -maxdepth 1 -name 'tool*' -print -quit 2>/dev/null)" ]]; then
+        echo "    ⚠️ 缓存内容不完整：未发现 staging_dir/tool*" >&2
+        rm -f "$tzst"
+        return 1
+    fi
+
+    # 保持原行为：仅备用库命中时回传主用 release
+    if [[ "$from_backup" = 'true' ]]; then
+        cp "$tzst" "$GITHUB_WORKSPACE/output" && echo "OUTPUT_RELEASE=true" >>$GITHUB_ENV
+    fi
+    # 保持原行为：去掉 tool stamp，避免后续 make 重复编译工具链
+    sed -i 's/ $(tool.*\/stamp-compile)//' Makefile
+    return 0
+}
+
 # 下载部署toolchain缓存
 download_toolchain() {
-    local cache_xa cache_xc
-    if [[ "$TOOLCHAIN" = 'true' ]]; then
-        cache_xa=$(curl -sL "https://api.github.com/repos/$GITHUB_REPOSITORY/releases" | awk -F '"' '/download_url/{print $4}' | grep "$CACHE_NAME")
-        cache_xc=$(curl -sL "https://api.github.com/repos/laiyujun/toolchain-cache/releases" | awk -F '"' '/download_url/{print $4}' | grep "$CACHE_NAME")
-        if [[ "$cache_xa" || "$cache_xc" ]]; then
-            wget -qc -t=3 "${cache_xa:-$cache_xc}"
-            if [ -e *.tzst ]; then
-                tar -I unzstd -xf *.tzst || tar -xf *.tzst
-                [ "$cache_xa" ] || (cp *.tzst $GITHUB_WORKSPACE/output && echo "OUTPUT_RELEASE=true" >>$GITHUB_ENV)
-                [ -d staging_dir ] && sed -i 's/ $(tool.*\/stamp-compile)//' Makefile
-            fi
-        else
-            echo "REBUILD_TOOLCHAIN=true" >>$GITHUB_ENV
-            echo "⚠️ 未找到最新工具链"
-            return 99
-        fi
-    else
+    local query_a query_c rc_a rc_c url_a digest_a url_c digest_c
+
+    if [[ "$TOOLCHAIN" != 'true' ]]; then
+        echo "    ℹ️ TOOLCHAIN 开关关闭，执行完整工具链编译"
         echo "REBUILD_TOOLCHAIN=true" >>$GITHUB_ENV
         return 99
     fi
+
+    query_a=$(query_toolchain_cache "$GITHUB_REPOSITORY"); rc_a=$?
+    query_c=$(query_toolchain_cache "laiyujun/toolchain-cache"); rc_c=$?
+
+    [[ $rc_a -eq 0 ]] && IFS=$'\t' read -r digest_a url_a <<<"$query_a"
+    [[ $rc_c -eq 0 ]] && IFS=$'\t' read -r digest_c url_c <<<"$query_c"
+
+    # 主用优先；主用命中但下载/校验失败时真回退备用（原 ${cache_xa:-$cache_xc} 只取其一）
+    if [[ $rc_a -eq 0 ]]; then
+        echo "    ✅ 主用仓库命中缓存：$url_a"
+        if fetch_and_deploy_toolchain "$url_a" "$digest_a" false; then
+            echo "    ✅ 工具链缓存部署完成（主用）"
+            return 0
+        fi
+        echo "    ⚠️ 主用缓存不可用，尝试备用仓库" >&2
+    fi
+
+    if [[ $rc_c -eq 0 ]]; then
+        echo "    ✅ 备用仓库命中缓存：$url_c"
+        if fetch_and_deploy_toolchain "$url_c" "$digest_c" true; then
+            echo "    ✅ 工具链缓存部署完成（备用）"
+            return 0
+        fi
+        echo "    ⚠️ 备用缓存不可用" >&2
+    fi
+
+    # 诊断：区分"查询失败"与"确实无缓存"，避免把 API 故障误判为缓存不存在
+    [[ $rc_a -eq 2 ]] && echo "    ⚠️ 主用仓库查询失败（不等于无缓存）" >&2
+    [[ $rc_a -eq 3 ]] && echo "    ℹ️ 主用仓库无匹配缓存" >&2
+    [[ $rc_c -eq 2 ]] && echo "    ⚠️ 备用仓库查询失败（不等于无缓存）" >&2
+    [[ $rc_c -eq 3 ]] && echo "    ℹ️ 备用仓库无匹配缓存" >&2
+
+    # 安全兜底：任何未成功部署的路径都必须显式触发编译。
+    # 否则 Compile Toolchain 被跳过，后续 make -j 会在空 staging_dir 上隐式全量编译且不上传缓存。
+    echo "REBUILD_TOOLCHAIN=true" >>$GITHUB_ENV
+    echo "⚠️ 未找到可用工具链缓存，将执行完整工具链编译"
+    return 99
 }
 
 # 更新&安装插件
